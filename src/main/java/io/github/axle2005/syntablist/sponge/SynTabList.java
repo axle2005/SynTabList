@@ -6,12 +6,14 @@ import org.slf4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.entity.living.player.tab.TabList;
 import org.spongepowered.api.entity.living.player.tab.TabListEntry;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.profile.GameProfileCache;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -26,7 +28,7 @@ import net.kaikk.mc.synx.SynX;
 import net.kaikk.mc.synx.packets.ChannelListener;
 import net.kaikk.mc.synx.packets.Packet;
 
-@Plugin(id = "syntablist", name = "SynTabList", dependencies = @Dependency(id="synx"))
+@Plugin(id = "syntablist", name = "SynTabList", dependencies = @Dependency(id = "synx"))
 public class SynTabList implements ChannelListener {
 
 	@Inject
@@ -76,10 +78,16 @@ public class SynTabList implements ChannelListener {
 
 				Optional<TabListEntry> optional = tablist.getEntry(playerData.getPlayerUUID());
 				if (optional.isPresent()) {
-					TabListEntry entry = optional.get();
+					TabListEntry entry = optional.get().setDisplayName(Text.of(TextColors.GRAY, sendingServer + " ",
+							TextColors.WHITE, playerData.getPlayerName()));
+					// GameProfile gp =
+					// gpmcache.getById(playerData.getPlayerUUID()).get();
+					// entry =
+					// TabListEntry.builder().displayName(Text.of(TextColors.GRAY,server,TextColors.WHITE,gp.getName().get())).build();
 
 				} else {
-					tablist.addEntry(addTabList(player.getTabList(), playerData.getPlayerUUID()));
+					tablist.addEntry(addTabList(player.getTabList(), playerData.getPlayerUUID(),
+							playerData.getPlayerName(), sendingServer));
 				}
 
 			}
@@ -87,8 +95,16 @@ public class SynTabList implements ChannelListener {
 
 	}
 
-	private TabListEntry addTabList(TabList tablist, UUID uuid) {
-		TabListEntry entry = TabListEntry.builder().profile(gpmcache.getById(uuid).get()).build();
+	private TabListEntry addTabList(TabList tablist, UUID uuid, String playername, String server) {
+		Optional<GameProfile> gp = gpmcache.getById(uuid);
+		if (!gp.isPresent()) {
+			GameProfile fakeProfile = GameProfile.of(uuid, playername);
+
+			gpmcache.add(fakeProfile);
+			gp = gpmcache.getById(uuid);
+		}
+		TabListEntry entry = TabListEntry.builder().list(tablist).profile(gp.get()).gameMode(GameModes.SURVIVAL)
+				.displayName(Text.of(TextColors.GRAY, server, TextColors.WHITE, playername)).build();
 		return entry;
 
 	}
