@@ -52,6 +52,10 @@ public class SynTabList implements ChannelListener {
 	private ListenerRegister events;
 	private Server server;
 	private GameProfileCache gpmcache;
+	
+	
+	Text tabHeader = Text.of(TextColors.BLUE, "=======================", Text.NEW_LINE, TextColors.BLUE,    "=========", TextColors.WHITE, "DeVco", TextColors.BLUE, "=========");
+	Text tabFooter = Text.of(TextColors.BLUE, "=======================");
 	Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
 
 	@Listener
@@ -96,9 +100,8 @@ public class SynTabList implements ChannelListener {
 
 				TabList tablist = player.getTabList();
 
-				tablist.setHeader(Text.of(TextColors.BLUE, "=======================", Text.NEW_LINE, TextColors.BLUE,
-						"=========", TextColors.WHITE, "DeVco", TextColors.BLUE, "========="));
-				tablist.setFooter(Text.of(TextColors.BLUE, "======================="));
+				tablist.setHeader(tabHeader);
+				tablist.setFooter(tabFooter);
 
 				// Checks if the player has been removed from playersData
 				// (Logged out) and removes from tablist
