@@ -8,14 +8,16 @@ public class PlayerData implements Serializable {
 	
 	private final String playerName;
 	private final UUID playerUUID;
-	private final String type;
+	private Action packet;
 	
-	public PlayerData(String playerName, UUID playerUUID, String type) {
+	public PlayerData(String playerName, UUID playerUUID, Action packet) {
 		this.playerName = playerName;
 		this.playerUUID = playerUUID;
-		this.type = type;
+		this.packet = packet;
 	}
-
+	public enum Action {
+		  JOIN, QUIT;
+		}
 	public String getPlayerName() {
 		return playerName;
 	}
@@ -23,8 +25,9 @@ public class PlayerData implements Serializable {
 	public UUID getPlayerUUID() {
 		return playerUUID;
 	}
-	public String getType()
+	public Action getAction()
 	{
-		return type;
+		return packet;
 	}
+	
 }

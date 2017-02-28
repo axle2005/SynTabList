@@ -28,6 +28,7 @@ import java.util.Map;
 
 import io.github.axle2005.syntablist.common.PlayerData;
 import io.github.axle2005.syntablist.common.Utils;
+import io.github.axle2005.syntablist.common.PlayerData.Action;
 import io.github.axle2005.syntablist.sponge.listeners.ListenerRegister;
 import net.kaikk.mc.synx.SynX;
 import net.kaikk.mc.synx.packets.ChannelListener;
@@ -70,14 +71,17 @@ public class SynTabList implements ChannelListener {
 		// Let's get the object from the packet
 		final PlayerData playerData = packet.getObject(PlayerData.class);
 
-		if (playerData.getType().equals("Join")) {
+		switch (playerData.getAction()) {
+		case JOIN: {
 			playersData.put(playerData.getPlayerUUID(), playerData);
-		} else if (playerData.getType().equals("Quit")) {
-			if (playersData.containsKey(playerData.getPlayerUUID())) {
-				playersData.remove(playerData.getPlayerUUID());
-			}
-			log.info(playerData.getPlayerName() + " " + playerData.getPlayerUUID());
+		  break;
 		}
+		case QUIT: {
+				playersData.remove(playerData.getPlayerUUID());
+		  break;
+		}
+		}
+		
 		for (Player player : server.getOnlinePlayers()) {
 
 			TabList tablist = player.getTabList();
