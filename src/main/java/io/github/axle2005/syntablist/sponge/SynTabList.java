@@ -18,6 +18,7 @@ import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.profile.GameProfileCache;
+import org.spongepowered.api.profile.GameProfileManager;
 import org.spongepowered.api.scheduler.Scheduler;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
@@ -51,10 +52,10 @@ public class SynTabList implements ChannelListener {
 
 	private ListenerRegister events;
 	private Server server;
-	private GameProfileCache gpmcache;
-	
-	
-	Text tabHeader = Text.of(TextColors.BLUE, "=======================", Text.NEW_LINE, TextColors.BLUE,    "=========", TextColors.WHITE, "DeVco", TextColors.BLUE, "=========");
+	private GameProfileManager gpm;
+
+	Text tabHeader = Text.of(TextColors.BLUE, "=======================", Text.NEW_LINE, TextColors.BLUE, "=========",
+			TextColors.WHITE, "DeVco", TextColors.BLUE, "=========");
 	Text tabFooter = Text.of(TextColors.BLUE, "=======================");
 	Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
 
@@ -63,7 +64,7 @@ public class SynTabList implements ChannelListener {
 		// new CommandRegister(this);
 		events = new ListenerRegister(this);
 		server = Sponge.getServer();
-		gpmcache = Sponge.getServer().getGameProfileManager().getCache();
+		gpm = Sponge.getServer().getGameProfileManager();
 
 	}
 
@@ -136,12 +137,12 @@ public class SynTabList implements ChannelListener {
 	}
 
 	private TabListEntry addTabList(TabList tablist, UUID uuid, String playername, String server) {
-		Optional<GameProfile> gp = gpmcache.getById(uuid);
+		Optional<GameProfile> gp = gpm.getCache().getById(uuid);
 		if (!gp.isPresent()) {
 			GameProfile fakeProfile = GameProfile.of(uuid, playername);
 
-			gpmcache.add(fakeProfile);
-			gp = gpmcache.getById(uuid);
+			gpm.getCache().add(fakeProfile);
+			gp = gpm.getCache().getById(uuid);
 		}
 
 		TabListEntry entry = TabListEntry.builder().list(tablist).profile(gp.get()).gameMode(GameModes.SURVIVAL)
