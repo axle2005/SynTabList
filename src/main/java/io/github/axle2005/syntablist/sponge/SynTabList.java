@@ -2,6 +2,9 @@ package io.github.axle2005.syntablist.sponge;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -15,6 +18,8 @@ import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.profile.GameProfileCache;
+import org.spongepowered.api.scheduler.Scheduler;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.plugin.Dependency;
@@ -40,10 +45,14 @@ public class SynTabList implements ChannelListener {
 	@Inject
 	private Logger log;
 
+	Scheduler scheduler = Sponge.getScheduler();
+	Task.Builder taskBuilder = scheduler.createTaskBuilder();
+	Task task = null;
+
 	private ListenerRegister events;
 	private Server server;
 	private GameProfileCache gpmcache;
-	Map<UUID, PlayerData> playersData = new HashMap<>();
+	Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
 
 	@Listener
 	public void initialization(GameInitializationEvent event) {
@@ -51,7 +60,7 @@ public class SynTabList implements ChannelListener {
 		events = new ListenerRegister(this);
 		server = Sponge.getServer();
 		gpmcache = Sponge.getServer().getGameProfileManager().getCache();
-		
+
 	}
 
 	@Listener
@@ -74,46 +83,46 @@ public class SynTabList implements ChannelListener {
 		switch (playerData.getAction()) {
 		case JOIN: {
 			playersData.put(playerData.getPlayerUUID(), playerData);
-		  break;
+			break;
 		}
 		case QUIT: {
-				playersData.remove(playerData.getPlayerUUID());
-		  break;
+			playersData.remove(playerData.getPlayerUUID());
+			break;
 		}
 		}
-		
-		for (Player player : server.getOnlinePlayers()) {
 
-			TabList tablist = player.getTabList();
+		task = taskBuilder.execute(() -> {
+			for (Player player : server.getOnlinePlayers()) {
 
-			tablist.setHeader(Text.of(TextColors.BLUE, "=======================", Text.NEW_LINE, TextColors.BLUE,
-					"=========", TextColors.WHITE, "DeVco", TextColors.BLUE, "========="));
-			tablist.setFooter(Text.of(TextColors.BLUE, "======================="));
+				TabList tablist = player.getTabList();
 
-			
-			//Checks if the player has been removed from playersData (Logged out) and removes from tablist
-			if (!playersData.containsKey(playerData.getPlayerUUID())) {
-				Optional<TabListEntry> optional = tablist.getEntry(playerData.getPlayerUUID());
-				if (optional.isPresent()) {
-					tablist.removeEntry(playerData.getPlayerUUID());
+				tablist.setHeader(Text.of(TextColors.BLUE, "=======================", Text.NEW_LINE, TextColors.BLUE,
+						"=========", TextColors.WHITE, "DeVco", TextColors.BLUE, "========="));
+				tablist.setFooter(Text.of(TextColors.BLUE, "======================="));
+
+				// Checks if the player has been removed from playersData
+				// (Logged out) and removes from tablist
+				if (!playersData.containsKey(playerData.getPlayerUUID())) {
+					Optional<TabListEntry> optional = tablist.getEntry(playerData.getPlayerUUID());
+					if (optional.isPresent()) {
+						tablist.removeEntry(playerData.getPlayerUUID());
+					}
+
 				}
-				
-			}
-			
-			
-			for (PlayerData pData : playersData.values()) {
 
-				Optional<TabListEntry> optional = tablist.getEntry(pData.getPlayerUUID());
-				if (optional.isPresent()) {
-					TabListEntry entry = optional.get()
-							.setDisplayName(Text.of(TextColors.WHITE, pData.getPlayerName()));
-				} else {
-					tablist.addEntry(addTabList(player.getTabList(), pData.getPlayerUUID(), pData.getPlayerName(),
-							sendingServer));
+				for (PlayerData pData : playersData.values()) {
+
+					Optional<TabListEntry> optional = tablist.getEntry(pData.getPlayerUUID());
+					if (optional.isPresent()) {
+						TabListEntry entry = optional.get()
+								.setDisplayName(Text.of(TextColors.WHITE, pData.getPlayerName()));
+					} else {
+						tablist.addEntry(addTabList(player.getTabList(), pData.getPlayerUUID(), pData.getPlayerName(),
+								sendingServer));
+					}
 				}
 			}
-
-		}
+		}).submit(this);
 
 	}
 
