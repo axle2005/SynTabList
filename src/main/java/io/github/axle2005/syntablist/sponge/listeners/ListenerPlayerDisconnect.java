@@ -31,7 +31,7 @@ public class ListenerPlayerDisconnect {
 		PlayerData playerData = new PlayerData(player.getName(), player.getUniqueId(),Action.QUIT);
 		
 		// broadcast data to the JPlayer channel - all servers will receive a packet with this data!
-		SynX.instance().broadcast(CHANNEL, playerData);
+		SynX.instance().broadcast(CHANNEL, playerData,System.currentTimeMillis()+60000);
 
 	}
 
