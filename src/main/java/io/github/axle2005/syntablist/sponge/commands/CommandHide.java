@@ -20,7 +20,7 @@ public class CommandHide implements CommandExecutor {
 	private static String CHANNEL;
 
 	public CommandHide(SynTabList plugin) {
-		CHANNEL = Utils.getChannel();
+		CHANNEL = plugin.getChannel();
 
 	}
 
@@ -33,7 +33,7 @@ public class CommandHide implements CommandExecutor {
 			if (args.equalsIgnoreCase("true")) {
 				if (player.hasPermission("syntablist.senioradmin")) {
 					StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.QUIT,
-							Rank.SENIORADMIN);
+							Rank.SENIORADMIN, true);
 					SynX.instance().broadcast(CHANNEL, staffData, System.currentTimeMillis() + 60000);
 					return CommandResult.success();
 				} else {
@@ -42,7 +42,7 @@ public class CommandHide implements CommandExecutor {
 			} else if (args.equalsIgnoreCase("false")) {
 				if (player.hasPermission("syntablist.senioradmin")) {
 					StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN,
-							Rank.SENIORADMIN);
+							Rank.SENIORADMIN,false);
 					SynX.instance().broadcast(CHANNEL, staffData, System.currentTimeMillis() + 60000);
 					return CommandResult.success();
 				} else {

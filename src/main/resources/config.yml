@@ -1,0 +1,84 @@
+MySQL:
+  Hostname: mysql.devcoftb.net
+  Username: randomthings
+  Password: hMyfnda7WmLcTER4
+  Database: randomthings
+
+# Blocks Jabba Crafting Table use
+BlockJabbaCraftingTable: true
+
+# Checks max stack items on item use (bags dupe!)
+StackedItemsCheck: true
+
+# Server name
+ServerName: undefined
+
+# Proxy name
+ProxyName: NA
+
+# Send an alert to all the staff after this amount of hours from the server start
+MissedRestartAlertHours: 6
+
+# Number of days after an unmodified region is deleted (claims will be checked anyway!). 0 to disable
+RegionDeleteDays: 37
+
+# Block non-player damage to villager
+BlockNonPlayerDamageToVillager: true
+
+# Fixes the missing InventoryCloseEvent when moving inside a nether portal that leads to several dupes
+NetherPortalDupeCheck: true
+
+# /resetpos command world
+ResetPosWorld: spawn
+
+# Slack WebHook URL
+SlackWebHookURL: "https://hooks.slack.com/services/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"
+
+# Send one or more console commands on plugin enable
+StartupCommands:
+  Enabled: false
+  Commands:
+  - sync hub broadcast %ServerName is now online!
+
+# This is basically a list of commands that are randomly shuffled
+# Use a tellraw generator for generating pretty announces
+# Remember to escape " with a \. Example: "test" becomes \"test\"
+Announces:
+- "sync all tellraw @a [\"\",{\"text\":\"Test Announce 1\",\"color\":\"aqua\"}]"
+- "sync all tellraw @a [\"\",{\"text\":\"Test Announce 2\",\"color\":\"gold\",\"italic\":true}]"
+- "sync #sf3 tellraw @a [\"\",{\"text\":\"Test Announce on SF3 servers only!\",\"color\":\"gold\",\"italic\":true}]"
+
+# Interval between announces above. In Ticks. 0 to disable
+AnnouncesInterval: 0
+
+TS3:
+  Address: "ts.resonant-rise.com"
+  User: kainomood
+  Password: OEhTvhoe
+  Port: 10011
+  ServerId: 12
+  Groups:
+    vip:
+    - vip,315
+    donator:
+    - donator,316
+    staff:
+    - op,274
+    - owner,273
+    - sdev,418
+    - sadmin,287
+    - dev,425
+    - admin,271
+    - smod,269
+    - mod,268
+    - cmod,267
+    - helper,266
+
+Reviews:
+  test: # this is an unique identifier for the modpack
+    URL: ""
+    # In milliseconds between two reviews from the same player
+    WaitTime: 604800000
+    Commands:
+    - broadcast &6%ign posted a feedback and was awarded with 20 points!
+    - enjin addpoints %ign 20

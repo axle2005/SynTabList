@@ -53,54 +53,19 @@ public class Config {
 				saveConfig(rootnode, configManager);
 
 			}
-			convertConfigToNew();
+			
 
-			if (rootnode.getNode("Warning", "Enabled").isVirtual() == true) {
-				rootnode.getNode("Warning", "Enabled").setValue(true);
+			if (rootnode.getNode("TabList", "Header").isVirtual() == true) {
+				rootnode.getNode("TabList", "Header").setValue("&1=======================/n=========&fDeVco&1=========");
 			}
-			if (rootnode.getNode("Warning", "Messages","Warning").isVirtual() == true) {
-				rootnode.getNode("Warning", "Messages","Warning").setValue("[SynTabList] Clearing Entities in 1 minute");
+			if (rootnode.getNode("TabList", "Footer").isVirtual() == true) {
+				rootnode.getNode("TabList", "Footer").setValue("&1=======================");
 			}
-			if (rootnode.getNode("Warning", "Messages","Cleared").isVirtual() == true) {
-				rootnode.getNode("Warning", "Messages","Cleared").setValue("[SynTabList] Entities have been cleared");
+
+			if(rootnode.getNode("SynX Channel").isVirtual())
+			{
+				rootnode.getNode("SynX Channel").setComment("Broadcast only on this channel").setValue("TabList");
 			}
-			if (rootnode.getNode("Clearing", "Lists", "EntityList").isVirtual() == true) {
-				rootnode.getNode("Clearing", "Lists", "EntityList").setValue(listEntityDefaults);
-			}
-			if (rootnode.getNode("Clearing", "Lists", "TileEntityList").isVirtual() == true) {
-				rootnode.getNode("Clearing", "Lists", "TileEntityList").setValue(listTileDefaults);
-			}
-			if (rootnode.getNode("Clearing", "Interval").isVirtual() == true) {
-				rootnode.getNode("Clearing", "Interval").setValue(60);
-			}
-			if (rootnode.getNode("Clearing", "PassiveMode").isVirtual() == true) {
-				rootnode.getNode("Clearing", "PassiveMode").setValue(false);
-			}
-			if (rootnode.getNode("Clearing", "KillAllMonsters").isVirtual() == true) {
-				rootnode.getNode("Clearing", "KillAllMonsters").setValue(false);
-			}
-			if (rootnode.getNode("Clearing", "KillDrops").isVirtual() == true) {
-				rootnode.getNode("Clearing", "KillDrops").setValue(false);
-			}
-			if (rootnode.getNode("Clearing", "KillAnimalGroups").isVirtual() == true) {
-				rootnode.getNode("Clearing", "KillAnimalGroups").setValue(false);
-			}
-			if (rootnode.getNode("Clearing", "CrashMode").isVirtual() == true) {
-				rootnode.getNode("Clearing", "CrashMode").setValue(false);
-			}
-			if (rootnode.getNode("Clearing", "MobLimiter", "Enabled").isVirtual() == true) {
-				rootnode.getNode("Clearing", "MobLimiter", "Enabled").setValue(false);
-			}
-			if (rootnode.getNode("Clearing", "MobLimiter", "Limit").isVirtual() == true) {
-				rootnode.getNode("Clearing", "MobLimiter", "Limit").setValue(500);
-			}
-			
-			
-			
-			//Convert config to version 1.3.0 (Removal of ListTypes)
-			convertTo130();
-			
-			
 			saveConfig(rootnode, configManager);
 		}
 
@@ -112,39 +77,7 @@ public class Config {
 		save(activeConfig);
 	}
 
-	private void convertConfigToNew() {
-		if (rootnode.getNode("Warning", "Message").isVirtual() == false) {
-			
-			rootnode.getNode("Warning", "Messages").setValue(rootnode.getNode("Warning", "Message","Warning").getValue());
-			rootnode.getNode("Warning").removeChild("Message");
-		}
 
-		if (rootnode.getNode("Interval").isVirtual() == false) {
-
-			rootnode.getNode("Clearing", "Interval").setValue(rootnode.getNode("Interval").getValue());
-			rootnode.removeChild("Interval");
-		}
-		if (rootnode.getNode("PassiveMode").isVirtual() == false) {
-
-			rootnode.getNode("Clearing", "PassiveMode").setValue(rootnode.getNode("PassiveMode").getValue());
-			rootnode.removeChild("PassiveMode");
-		}
-		if (rootnode.getNode("EntityList").isVirtual() == false) {
-			rootnode.getNode("Clearing", "EntityList").setValue(rootnode.getNode("EntityList").getValue());
-			rootnode.removeChild("EntityList");
-		}
-		if (rootnode.getNode("Clearing", "EntityList").isVirtual() == false) {
-			rootnode.getNode("Clearing", "Lists", "EntityList")
-					.setValue(rootnode.getNode("Clearing", "EntityList").getValue());
-			rootnode.getNode("Clearing").removeChild("EntityList");
-		}
-	}
-	private void convertTo130()
-	{
-		if (rootnode.getNode("Clearing","ListType").isVirtual() == false) {
-			rootnode.getNode("Clearing").removeChild("ListType");
-		}
-	}
 
 	public void saveConfig(ConfigurationNode config, ConfigurationLoader<CommentedConfigurationNode> configManager) {
 		try {
