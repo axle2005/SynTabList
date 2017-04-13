@@ -64,7 +64,7 @@ public class Config {
 
 			if(rootnode.getNode("SynX Channel").isVirtual())
 			{
-				rootnode.getNode("SynX Channel").setComment("Broadcast only on this channel").setValue("TabList");
+				rootnode.getNode("SynX Channel").setComment("Broadcast only on this channel\nMust be less than 16 characters").setValue("TabList");
 			}
 			saveConfig(rootnode, configManager);
 		}
