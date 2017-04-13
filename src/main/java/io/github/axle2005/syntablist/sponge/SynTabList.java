@@ -3,11 +3,11 @@ package io.github.axle2005.syntablist.sponge;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.entity.living.player.tab.TabList;
@@ -17,34 +17,46 @@ import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.profile.GameProfile;
-import org.spongepowered.api.profile.GameProfileCache;
 import org.spongepowered.api.profile.GameProfileManager;
 import org.spongepowered.api.scheduler.Scheduler;
 import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.scoreboard.Team;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.plugin.Dependency;
 
 import com.google.inject.Inject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.nio.file.Path;
 import java.util.Map;
 
 import io.github.axle2005.syntablist.common.PlayerData;
+import io.github.axle2005.syntablist.common.StaffData;
 import io.github.axle2005.syntablist.common.Utils;
-import io.github.axle2005.syntablist.common.PlayerData.Action;
+import io.github.axle2005.syntablist.sponge.commands.CommandRegister;
 import io.github.axle2005.syntablist.sponge.listeners.ListenerRegister;
 import net.kaikk.mc.synx.SynX;
 import net.kaikk.mc.synx.packets.ChannelListener;
 import net.kaikk.mc.synx.packets.Packet;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 @Plugin(id = "syntablist", name = "SynTabList", dependencies = @Dependency(id = "synx"))
 public class SynTabList implements ChannelListener {
 
 	@Inject
 	private Logger log;
+	
+	@Inject
+	@ConfigDir(sharedRoot = false)
+	private Path defaultConfig;
+
+	@Inject
+	@DefaultConfig(sharedRoot = false)
+	private ConfigurationLoader<CommentedConfigurationNode> configManager;
+
+	Config config;
+
 
 	Scheduler scheduler = Sponge.getScheduler();
 	Task.Builder taskBuilder = scheduler.createTaskBuilder();
@@ -53,16 +65,21 @@ public class SynTabList implements ChannelListener {
 	private ListenerRegister events;
 	private Server server;
 	private GameProfileManager gpm;
+	private Optional<TabListEntry> tabListEntry;
+	private Team staff;
 
 	Text tabHeader = Text.of(TextColors.BLUE, "=======================", Text.NEW_LINE, TextColors.BLUE, "=========",
 			TextColors.WHITE, "DeVco", TextColors.BLUE, "=========");
 	Text tabFooter = Text.of(TextColors.BLUE, "=======================");
 	Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
+	Map<UUID, StaffData> staffsData = new ConcurrentHashMap<>();
+	Map<UUID, Text> rankData = new ConcurrentHashMap<>();
 
 	@Listener
 	public void initialization(GameInitializationEvent event) {
 		// new CommandRegister(this);
 		events = new ListenerRegister(this);
+		new CommandRegister(this);
 		server = Sponge.getServer();
 		gpm = Sponge.getServer().getGameProfileManager();
 
@@ -74,6 +91,7 @@ public class SynTabList implements ChannelListener {
 		SynX.instance().register(this, Utils.getChannel(), this);
 		events.registerEvent("Connect");
 		events.registerEvent("Disconnect");
+		staff = Team.builder().name("Staff").build();
 
 	}
 
@@ -83,58 +101,96 @@ public class SynTabList implements ChannelListener {
 		final String sendingServer = packet.getFrom().getName();
 
 		// Let's get the object from the packet
-		final PlayerData playerData = packet.getObject(PlayerData.class);
+		// final PlayerData playerData = packet.getObject(PlayerData.class);
 
-		switch (playerData.getAction()) {
-		case JOIN: {
-			playersData.put(playerData.getPlayerUUID(), playerData);
-			break;
-		}
-		case QUIT: {
-			playersData.remove(playerData.getPlayerUUID());
-			break;
-		}
-		}
+		final Object data = packet.getObject();
+		if (data instanceof StaffData) {
+			StaffData staffData = (StaffData) data;
 
-		task = taskBuilder.execute(() -> {
-			for (Player player : server.getOnlinePlayers()) {
-
-				TabList tablist = player.getTabList();
-
-				tablist.setHeader(tabHeader);
-				tablist.setFooter(tabFooter);
-
-				// Checks if the player has been removed from playersData
-				// (Logged out) and removes from tablist
-				if (!playersData.containsKey(playerData.getPlayerUUID())) {
-					Optional<TabListEntry> optional = tablist.getEntry(playerData.getPlayerUUID());
-					if (optional.isPresent()) {
-						tablist.removeEntry(playerData.getPlayerUUID());
-					}
-
-				}
-
-				for (PlayerData pData : playersData.values()) {
-
-					Optional<TabListEntry> optional = tablist.getEntry(pData.getPlayerUUID());
-					if (optional.isPresent()) {
-						TabListEntry entry = optional.get()
-								.setDisplayName(Text.of(TextColors.WHITE, pData.getPlayerName()));
-					} else {
-						tablist.addEntry(addTabList(player.getTabList(), pData.getPlayerUUID(), pData.getPlayerName(),
-								sendingServer));
-					}
-				}
+			switch (staffData.getAction()) {
+			case QUIT: {
+				staffsData.remove(staffData.getPlayerUUID());
+				rankData.remove(staffData.getPlayerUUID());
+				break;
 			}
-		}).submit(this);
+			case JOIN: {
+				staffsData.put(staffData.getPlayerUUID(), staffData);
+				switch (staffData.getRank()) {
+				case SENIORADMIN: {
+					
+					rankData.put(staffData.getPlayerUUID(), Text.of(TextColors.GREEN, staffData.getPlayerName() + " "));
+					staff.addMember(Text.of(staffData.getPlayerUUID(), Text.of(TextColors.GREEN, staffData.getPlayerName() + " ")));
+					break;
+				}
+				case SENIORDEVELOPER: {
+
+					break;
+				}
+				}
+
+				break;
+			}
+			}
+			/*task = taskBuilder.execute(() -> {
+				for (Player player : server.getOnlinePlayers()) {
+
+					TabList tablist = player.getTabList();
+
+					for (StaffData sData : staffsData.values()) {
+						
+						tabHeader = Text.of(Text.NEW_LINE, rankData.get(staffData.getPlayerUUID()));
+						log.info(""+Text.of(Text.NEW_LINE, rankData.get(staffData.getPlayerUUID())));
+
+					}
+					tablist.setHeaderAndFooter(tabHeader, tabFooter);
+				}
+			}).submit(this);*/
+		}
+		
+			PlayerData playerData = (PlayerData) data;
+			
+			switch (playerData.getAction()) {
+			case JOIN: {
+				playersData.put(playerData.getPlayerUUID(), playerData);
+				break;
+			}
+			case QUIT: {
+				playersData.remove(playerData.getPlayerUUID());
+				break;
+			}
+			}
+			
+			task = taskBuilder.execute(() -> {
+				for (Player player : server.getOnlinePlayers()) {
+
+					//Team staff = Team.builder().nameTagVisibility(Visibility.)
+					TabList tablist = player.getTabList();
+					
+					tablist.setHeaderAndFooter(tabHeader, tabFooter);
+					
+					// Checks if the player has been removed from playersData
+					// (Logged out) and removes from tablist
+					if (!playersData.containsKey(playerData.getPlayerUUID())) {
+						removeTabList(tablist, playerData.getPlayerUUID());
+					}
+					
+					for (PlayerData pData : playersData.values()) {
+
+						tabListEntry = tablist.getEntry(pData.getPlayerUUID());
+						if (tabListEntry.isPresent()) {
+							TabListEntry entry = tabListEntry.get()
+									.setDisplayName(Text.of(TextColors.WHITE, pData.getPlayerName()));
+						} else {
+							tablist.addEntry(addTabList(player.getTabList(), pData.getPlayerUUID(),
+									pData.getPlayerName(), sendingServer));
+						}
+					}
+				}
+			}).submit(this);
+		
 
 	}
 
-	private void buildTabList(TabList tablist) {
-		tablist.setHeader(Text.of(TextColors.GOLD, "=========DeVco========="));
-		tablist.setFooter(Text.of(TextColors.RED, "======================="));
-
-	}
 
 	private TabListEntry addTabList(TabList tablist, UUID uuid, String playername, String server) {
 		Optional<GameProfile> gp = gpm.getCache().getById(uuid);
@@ -152,9 +208,9 @@ public class SynTabList implements ChannelListener {
 	}
 
 	private void removeTabList(TabList tablist, UUID uuid) {
-		Optional<TabListEntry> optional = tablist.getEntry(uuid);
-		if (optional.isPresent()) {
-			TabListEntry entry = optional.get();
+		tabListEntry = tablist.getEntry(uuid);
+		if (tabListEntry.isPresent()) {
+			tablist.removeEntry(uuid);
 		}
 	}
 

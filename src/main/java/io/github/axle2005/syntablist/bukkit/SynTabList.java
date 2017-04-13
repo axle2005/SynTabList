@@ -13,14 +13,16 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import io.github.axle2005.syntablist.bukkit.listeners.ListenerPlayerConnect;
+import io.github.axle2005.syntablist.bukkit.listeners.ListenerPlayerDisconnect;
 import io.github.axle2005.syntablist.common.PlayerData;
 import io.github.axle2005.syntablist.common.Utils;
 import net.kaikk.mc.synx.SynX;
 import net.kaikk.mc.synx.packets.ChannelListener;
 import net.kaikk.mc.synx.packets.Packet;
 
-public class SynTabList extends JavaPlugin implements ChannelListener {
-
+public class SynTabList extends JavaPlugin {
+	 //implements ChannelListener
 	private static String CHANNEL;
 	private Server server;
 	static Logger log = Logger.getLogger("Minecraft");
@@ -33,14 +35,17 @@ public class SynTabList extends JavaPlugin implements ChannelListener {
 		this.log.info(pdf.getName() + "> " + pdf.getName() + " v" + pdf.getVersion() + " enabled!!");
 		server = Bukkit.getServer();
 		CHANNEL = Utils.getChannel();
-		SynX.instance().register(this, CHANNEL, this);
+		
+		getServer().getPluginManager().registerEvents(new ListenerPlayerConnect(this), this);
+		getServer().getPluginManager().registerEvents(new ListenerPlayerDisconnect(this), this);
+		//SynX.instance().register(this, CHANNEL, this);
 	}
 
 	public static Logger getLog() {
 		return log;
 	}
 
-	@Override
+	//@Override
 	public void onPacketReceived(Packet packet) {
 		// This is the server that sent this packet
 		final String sendingServer = packet.getFrom().getName();
@@ -52,7 +57,14 @@ public class SynTabList extends JavaPlugin implements ChannelListener {
 		 * BukkitRunnable class in the following way.
 		 */
 		final PlayerData playerData = packet.getObject(PlayerData.class);
-		if (playerData.getType().equals("Quit")) {
+		
+		
+		switch (playerData.getAction()) {
+		case JOIN: {
+			
+			break;
+		}
+		case QUIT: {
 			for (Player player : server.getOnlinePlayers()) {
 				// removeTabList(player.getTabList(),
 				// playerData.getPlayerUUID());
@@ -74,6 +86,8 @@ public class SynTabList extends JavaPlugin implements ChannelListener {
 					}
 				}
 			}.runTask(this);
+			break;
+		}
 		}
 
 	}
