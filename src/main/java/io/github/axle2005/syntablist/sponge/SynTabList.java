@@ -15,6 +15,7 @@ import org.spongepowered.api.entity.living.player.tab.TabListEntry;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.profile.GameProfileManager;
@@ -33,9 +34,12 @@ import java.util.Map;
 
 import io.github.axle2005.syntablist.common.PlayerData;
 import io.github.axle2005.syntablist.common.StaffData;
-import io.github.axle2005.syntablist.common.Utils;
+import io.github.axle2005.syntablist.common.PlayerData.Action;
+import io.github.axle2005.syntablist.common.ServerData;
+import io.github.axle2005.syntablist.common.ServerData.State;
 import io.github.axle2005.syntablist.sponge.commands.CommandRegister;
 import io.github.axle2005.syntablist.sponge.listeners.ListenerRegister;
+import io.github.axle2005.syntablist.sponge.listeners.ListenerServerStart;
 import net.kaikk.mc.synx.SynX;
 import net.kaikk.mc.synx.packets.ChannelListener;
 import net.kaikk.mc.synx.packets.Packet;
@@ -45,6 +49,12 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 @Plugin(id = "syntablist", name = "SynTabList", dependencies = @Dependency(id = "synx"))
 public class SynTabList implements ChannelListener {
 
+	
+	//To do
+	/*
+	 * Get servers to send players online when starting. 
+	 * Crash fixing. 
+	 */
 	@Inject
 	private Logger log;
 
@@ -63,11 +73,14 @@ public class SynTabList implements ChannelListener {
 	Task task = null;
 
 	private ListenerRegister events;
+	private ListenerServerStart start;
 	private Server server;
 	private GameProfileManager gpm;
 	private Optional<TabListEntry> tabListEntry;
 	private Team staff;
 	private String channel;
+	private String channelstart = "ServerState";
+	private String nodeName; 
 
 	
 	Text tabHeader;
@@ -83,10 +96,12 @@ public class SynTabList implements ChannelListener {
 		tabHeader = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Header")));
 		tabFooter = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer")));
 		channel = config.getNodeString("SynX Channel");
+		nodeName = SynX.instance().getNode().getName();
 		
 		
 		events = new ListenerRegister(this);
 		new CommandRegister(this);
+		start = new ListenerServerStart(this);
 		
 		server = Sponge.getServer();
 		gpm = Sponge.getServer().getGameProfileManager();
@@ -96,7 +111,8 @@ public class SynTabList implements ChannelListener {
 	@Listener
 	public void onEnable(GameStartedServerEvent event) {
 
-		SynX.instance().register(this, Utils.getChannel(), this);
+		SynX.instance().register(this, channel, this);
+		SynX.instance().register(this, channelstart, start);
 		events.registerEvent("Connect");
 		events.registerEvent("Disconnect");
 		staff = Team.builder().name("Staff").build();
@@ -105,6 +121,11 @@ public class SynTabList implements ChannelListener {
 		
 		
 
+	}
+	@Listener
+	public void onStop(GameStoppingServerEvent event){
+		ServerData serverData = new ServerData(nodeName, State.STOP);
+		//SynX.instance().broadcast(CHANNEL, playerData, System.currentTimeMillis()+60000);
 	}
 
 	@Override
@@ -116,56 +137,13 @@ public class SynTabList implements ChannelListener {
 		// final PlayerData playerData = packet.getObject(PlayerData.class);
 
 		final Object data = packet.getObject();
-		/*if (data instanceof StaffData) {
-			StaffData staffData = (StaffData) data;
-
-			switch (staffData.getAction()) {
-			case QUIT: {
-				staffsData.remove(staffData.getPlayerUUID());
-				rankData.remove(staffData.getPlayerUUID());
-
-				break;
-			}
-			case JOIN: {
-				staffsData.put(staffData.getPlayerUUID(), staffData);
-				switch (staffData.getRank()) {
-				case SENIORADMIN: {
-
-					rankData.put(staffData.getPlayerUUID(), Text.of(TextColors.GREEN, staffData.getPlayerName() + " "));
-					staff.addMember(Text.of(TextColors.GREEN, staffData.getPlayerName() + " "));
-					break;
-				}
-				case SENIORDEVELOPER: {
-
-					break;
-				}
-				}
-
-				break;
-			}
-			}
-			/*
-			 * task = taskBuilder.execute(() -> { for (Player player :
-			 * server.getOnlinePlayers()) {
-			 * 
-			 * TabList tablist = player.getTabList();
-			 * 
-			 * for (StaffData sData : staffsData.values()) {
-			 * 
-			 * tabHeader = Text.of(Text.NEW_LINE,
-			 * rankData.get(staffData.getPlayerUUID()));
-			 * log.info(""+Text.of(Text.NEW_LINE,
-			 * rankData.get(staffData.getPlayerUUID())));
-			 * 
-			 * } tablist.setHeaderAndFooter(tabHeader, tabFooter); }
-			 * }).submit(this);
-			 
-		}*/
+		
 
 		PlayerData playerData = (PlayerData) data;
 
 		switch (playerData.getAction()) {
 		case JOIN: {
+			
 			playersData.put(playerData.getPlayerUUID(), playerData);
 			break;
 		}
@@ -188,6 +166,7 @@ public class SynTabList implements ChannelListener {
 				if (!playersData.containsKey(playerData.getPlayerUUID())) {
 					removeTabList(tablist, playerData.getPlayerUUID());
 				}
+				
 
 				for (PlayerData pData : playersData.values()) {
 
@@ -202,18 +181,21 @@ public class SynTabList implements ChannelListener {
 						}
 
 					} else {
+						
 						TabListEntry entry = addTabList(player.getTabList(), pData.getPlayerUUID(),
 								Text.of(TextColors.WHITE, pData.getPlayerName()), sendingServer);
 						
 						if (pData instanceof StaffData) {
-							entry.setDisplayName(Text.of(TextColors.DARK_GREEN, pData.getPlayerName()));
-						} 
+								entry.setDisplayName(Text.of(TextColors.DARK_GREEN, pData.getPlayerName()));
+							
+							
+						}
 						tablist.addEntry(entry);
 
 					}
 				}
 			}
-		}).submit(this);
+		}).async().submit(this);
 
 	}
 
@@ -242,5 +224,50 @@ public class SynTabList implements ChannelListener {
 	{
 		return channel;
 	}
+	//Extranious code, moved here to get out of my way. 
+	/*if (data instanceof StaffData) {
+	StaffData staffData = (StaffData) data;
 
+	switch (staffData.getAction()) {
+	case QUIT: {
+		staffsData.remove(staffData.getPlayerUUID());
+		rankData.remove(staffData.getPlayerUUID());
+
+		break;
+	}
+	case JOIN: {
+		staffsData.put(staffData.getPlayerUUID(), staffData);
+		switch (staffData.getRank()) {
+		case SENIORADMIN: {
+
+			rankData.put(staffData.getPlayerUUID(), Text.of(TextColors.GREEN, staffData.getPlayerName() + " "));
+			staff.addMember(Text.of(TextColors.GREEN, staffData.getPlayerName() + " "));
+			break;
+		}
+		case SENIORDEVELOPER: {
+
+			break;
+		}
+		}
+
+		break;
+	}
+	}
+	/*
+	 * task = taskBuilder.execute(() -> { for (Player player :
+	 * server.getOnlinePlayers()) {
+	 * 
+	 * TabList tablist = player.getTabList();
+	 * 
+	 * for (StaffData sData : staffsData.values()) {
+	 * 
+	 * tabHeader = Text.of(Text.NEW_LINE,
+	 * rankData.get(staffData.getPlayerUUID()));
+	 * log.info(""+Text.of(Text.NEW_LINE,
+	 * rankData.get(staffData.getPlayerUUID())));
+	 * 
+	 * } tablist.setHeaderAndFooter(tabHeader, tabFooter); }
+	 * }).submit(this);
+	 
+}*/
 }
