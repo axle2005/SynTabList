@@ -40,7 +40,6 @@ import io.github.axle2005.syntablist.common.StaffData;
 import io.github.axle2005.syntablist.common.Utils;
 import io.github.axle2005.syntablist.common.ServerData;
 import io.github.axle2005.syntablist.common.ServerData.State;
-import io.github.axle2005.syntablist.common.StaffData.Rank;
 import io.github.axle2005.syntablist.sponge.commands.CommandRegister;
 import io.github.axle2005.syntablist.sponge.listeners.ListenerRegister;
 import io.github.axle2005.syntablist.sponge.listeners.ListenerServerStart;
@@ -80,6 +79,8 @@ public class SynTabList implements ChannelListener {
     private String channel;
     private String channelState = "State";
     private String nodeName;
+    private Boolean globalStaff;
+    private Boolean globalPlayer;
 
     Text tabHeader;
     Text tabFooter;
@@ -99,10 +100,15 @@ public class SynTabList implements ChannelListener {
 	server = Sponge.getServer();
 
 	config = new Config(this, defaultConfig, configManager);
+	
+	globalStaff = config.getNodeBoolean("Broadcast Globally,Options,Staff");
+	globalPlayer = config.getNodeBoolean("Broadcast Globally,Options,Players");
 
 	tabHeader = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Header")));
 	tabFooter = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer")));
-	channel = config.getNodeString("SynX Channel");
+	
+	channel="TabList";
+	
 	nodeName = SynX.instance().getNode().getName();
 
 	new CommandRegister(this);
@@ -123,6 +129,7 @@ public class SynTabList implements ChannelListener {
 
 	SynX.instance().register(this, channel, this);
 	SynX.instance().register(this, channelState, start);
+	
 	events.registerEvent("Connect");
 	events.registerEvent("Disconnect");
 
@@ -143,6 +150,7 @@ public class SynTabList implements ChannelListener {
     public void onPacketReceived(Packet packet) {
 	// This is the server that sent this packet
 	final String sendingServer = packet.getFrom().getName();
+	
 
 	// Let's get the object from the packet
 	// final PlayerData playerData = packet.getObject(PlayerData.class);
@@ -153,8 +161,9 @@ public class SynTabList implements ChannelListener {
 
 	switch (playerData.getAction()) {
 	case JOIN: {
-
-	    playersData.put(playerData.getPlayerUUID(), playerData);
+	    if((playerData instanceof StaffData && globalStaff)||globalPlayer){
+		playersData.put(playerData.getPlayerUUID(), playerData);
+	    }
 	    break;
 	}
 	case QUIT: {
@@ -197,7 +206,8 @@ public class SynTabList implements ChannelListener {
 			 * entry.setDisplayName(Text.of(TextColors.WHITE,
 			 * pData.getPlayerName())); }
 			 */
-
+			
+			
 			tablist.addEntry(entry);
 			
 
@@ -211,7 +221,6 @@ public class SynTabList implements ChannelListener {
     }
 
     private TabListEntry addTabList(TabList tablist, UUID uuid, Text playername, String server) {
-	Optional<GameProfile> gp = gpm.getCache().getById(uuid);
 	CompletableFuture<GameProfile> futureGameProfile = gpm.get(uuid);
 	try {
 	    GameProfile gp1 = futureGameProfile.get();

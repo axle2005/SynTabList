@@ -8,13 +8,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.reflect.TypeToken;
-
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 public class Config {
 
@@ -56,7 +53,7 @@ public class Config {
 			
 
 			if (rootnode.getNode("TabList", "Header").isVirtual() == true) {
-				rootnode.getNode("TabList", "Header").setValue("&1=======================/n=========&fDeVco&1=========");
+				rootnode.getNode("TabList", "Header").setValue("&1=======================\n=========&fDeVco&1=========");
 			}
 			if (rootnode.getNode("TabList", "Footer").isVirtual() == true) {
 				rootnode.getNode("TabList", "Footer").setValue("&1=======================");
@@ -66,14 +63,17 @@ public class Config {
 			{
 				rootnode.getNode("SynX Channel").setComment("Broadcast only on this channel\nMust be less than 16 characters").setValue("TabList");
 			}
+			if(rootnode.getNode("Broadcast Globally").isVirtual()){
+			    rootnode.getNode("Broadcast Globally", "Options","Staff").setComment("Enabling will send 'Staff' entiries to all nodes").setValue(true);
+			    rootnode.getNode("Broadcast Globally", "Options","Players").setComment("Enabling will send 'Player' entiries to all nodes").setValue(false);
+			}
+			
 			saveConfig(rootnode, configManager);
 		}
 
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-		entitylist = getEntitylist();
-		// saveConfig(rootnode, configManager);
 		save(activeConfig);
 	}
 
@@ -98,72 +98,6 @@ public class Config {
 		return defaultConfig;
 	}
 
-	public List<String> getEntitylist() {
-
-		activeConfig = new File(getConfigDir().toFile(), "SynTabList.conf");
-
-		configManager = HoconConfigurationLoader.builder().setFile(activeConfig).build();
-
-		try {
-
-			rootnode = configManager.load();
-			if (!activeConfig.exists()) {
-				// defaults(activeConfig, rootnode);
-				saveConfig(rootnode, configManager);
-
-			}
-
-		}
-
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		entitylist = new ArrayList<String>();
-		try {
-			for (String entity : rootnode.getNode("Clearing", "Lists", "EntityList")
-					.getList(TypeToken.of(String.class))) {
-				entitylist.add(entity.toLowerCase());
-				// plugin.getLogger().info(entity);
-			}
-		} catch (ObjectMappingException e) {
-			e.printStackTrace();
-		}
-
-		return entitylist;
-	}
-
-	public List<String> getTilelist() {
-
-		activeConfig = new File(getConfigDir().toFile(), "SynTabList.conf");
-
-		configManager = HoconConfigurationLoader.builder().setFile(activeConfig).build();
-
-		try {
-
-			rootnode = configManager.load();
-			if (!activeConfig.exists()) {
-				// defaults(activeConfig, rootnode);
-				saveConfig(rootnode, configManager);
-
-			}
-
-		}
-
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		entitylist = new ArrayList<String>();
-		try {
-			for (String entity : rootnode.getNode("Clearing", "Lists", "TileEntityList")
-					.getList(TypeToken.of(String.class))) {
-				entitylist.add(entity.toLowerCase());
-				// plugin.getLogger().info(entity);
-			}
-		} catch (ObjectMappingException e) {
-			e.printStackTrace();
-		}
-		return entitylist;
-	}
 
 	public Integer getNodeInt(String node) {
 		int x = 0;
