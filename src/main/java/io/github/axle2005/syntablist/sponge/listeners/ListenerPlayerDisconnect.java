@@ -6,7 +6,6 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 
 import io.github.axle2005.syntablist.sponge.SynTabList;
 import io.github.axle2005.syntablist.common.PlayerData;
-import io.github.axle2005.syntablist.common.Utils;
 import io.github.axle2005.syntablist.common.PlayerData.Action;
 import net.kaikk.mc.synx.SynX;
 
@@ -18,7 +17,7 @@ public class ListenerPlayerDisconnect {
 
 	public ListenerPlayerDisconnect(SynTabList plugin) {
 		this.plugin = plugin;
-		CHANNEL = Utils.getChannel();
+		CHANNEL = plugin.getChannel();
 	}
 	
 	@Listener(beforeModifications = true)

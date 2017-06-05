@@ -6,6 +6,8 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 import io.github.axle2005.syntablist.common.PlayerData;
 import io.github.axle2005.syntablist.common.Utils;
@@ -35,8 +37,10 @@ public class CommandHide implements CommandExecutor {
 					StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.QUIT,
 							Rank.SENIORADMIN, true);
 					SynX.instance().broadcast(CHANNEL, staffData, System.currentTimeMillis() + 60000);
+					player.sendMessage(Text.of(TextColors.AQUA, "You are now hidden"));
 					return CommandResult.success();
 				} else {
+					player.sendMessage(Text.of(TextColors.RED, "/stl hide true/false"));
 					return CommandResult.empty();
 				}
 			} else if (args.equalsIgnoreCase("false")) {
@@ -44,17 +48,21 @@ public class CommandHide implements CommandExecutor {
 					StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN,
 							Rank.SENIORADMIN,false);
 					SynX.instance().broadcast(CHANNEL, staffData, System.currentTimeMillis() + 60000);
+					player.sendMessage(Text.of(TextColors.AQUA, "You are now visible"));
 					return CommandResult.success();
 				} else {
+					player.sendMessage(Text.of(TextColors.RED, "/stl hide true/false"));
 					return CommandResult.empty();
 				}
 			}
 
 			else {
+				player.sendMessage(Text.of(TextColors.RED, "/stl hide true/false"));
 				return CommandResult.empty();
 			}
 
 		} else {
+			
 			return CommandResult.empty();
 		}
 	}

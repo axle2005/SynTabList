@@ -8,7 +8,7 @@ public class StaffData extends PlayerData {
 	private Rank rank;
 	private Boolean isHidden;
 	public enum Rank {
-		  SENIORADMIN,SENIORDEVELOPER,ADMIN,DEVELOPER,SENIORMOD,MOD,CHATMOD,HELPER;
+		  HIDDEN,OWNER,OPERATOR,SENIORADMIN,SENIORDEVELOPER,ADMIN,DEVELOPER,SENIORMOD,MOD,CHATMOD,HELPER;
 		}
 	
 	public StaffData(String playerName, UUID playerUUID, Action packet, Rank rank, Boolean isHidden) {
