@@ -13,7 +13,7 @@ public class ListenerServerStart implements ChannelListener {
 
 
 
-    public ListenerServerStart(SynTabList instance) {
+    public ListenerServerStart() {
 
     }
 

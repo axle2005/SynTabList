@@ -14,7 +14,7 @@ public class CommandRegister {
 	{
 		CommandSpec run = CommandSpec.builder().permission("syntablist.hide").description(Text.of("Hides staff member from tablist"))
 				.arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("true/false"))))
-				.executor(new CommandHide(plugin)).build();
+				.executor(new CommandHide()).build();
 
 		CommandSpec syntablist = CommandSpec.builder().description(Text.of("SynTabList Commands")).child(run, "hide")
 				.build();

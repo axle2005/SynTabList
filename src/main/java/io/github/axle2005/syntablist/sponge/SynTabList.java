@@ -95,7 +95,7 @@ public class SynTabList implements ChannelListener {
 
 	new CommandRegister(this);
 	events = new ListenerRegister(this);
-	start = new ListenerServerStart(this);
+	start = new ListenerServerStart();
 
 	if (!Utils.checkDummyFile("plugins/configs/syntablist")) {
 	    ServerData serverData = new ServerData(nodeName, State.CRASH);
@@ -129,7 +129,6 @@ public class SynTabList implements ChannelListener {
     @Override
     public void onPacketReceived(Packet packet) {
 	// This is the server that sent this packet
-	final String sendingServer = packet.getFrom().getName();
 
 	// Let's get the object from the packet
 	// final PlayerData playerData = packet.getObject(PlayerData.class);
@@ -171,7 +170,7 @@ public class SynTabList implements ChannelListener {
 	}
 	case QUIT: {
 	    playersData.remove(playerData.getPlayerUUID());
-
+	    
 	    // Checks if the player has been removed from playersData
 	    // (Logged out) and removes from tablist
 	    for (Player player : server.getOnlinePlayers()) {

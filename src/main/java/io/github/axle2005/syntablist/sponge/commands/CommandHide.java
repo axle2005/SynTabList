@@ -13,14 +13,13 @@ import io.github.axle2005.syntablist.common.PlayerData.Action;
 import io.github.axle2005.syntablist.common.StaffData.Rank;
 import io.github.axle2005.syntablist.common.StaffData;
 import io.github.axle2005.syntablist.common.Utils;
-import io.github.axle2005.syntablist.sponge.SynTabList;
 import net.kaikk.mc.synx.SynX;
 
 public class CommandHide implements CommandExecutor {
 
 	private static final String CHANNEL = Utils.getChannel();
 
-	public CommandHide(SynTabList plugin) {
+	public CommandHide() {
 
 	}
 
