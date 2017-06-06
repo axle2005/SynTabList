@@ -9,8 +9,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import io.github.axle2005.syntablist.common.PlayerData;
-import io.github.axle2005.syntablist.common.Utils;
 import io.github.axle2005.syntablist.common.PlayerData.Action;
 import io.github.axle2005.syntablist.common.StaffData.Rank;
 import io.github.axle2005.syntablist.common.StaffData;

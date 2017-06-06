@@ -1,7 +1,5 @@
 package io.github.axle2005.syntablist.bukkit.listeners;
 
-import org.spongepowered.api.Sponge;
-
 import io.github.axle2005.syntablist.bukkit.SynTabList;
 import io.github.axle2005.syntablist.bukkit.listeners.ListenerPlayerConnect;
 import io.github.axle2005.syntablist.bukkit.listeners.ListenerPlayerDisconnect;

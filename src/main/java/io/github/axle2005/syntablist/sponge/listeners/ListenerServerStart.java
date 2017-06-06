@@ -20,7 +20,7 @@ public class ListenerServerStart implements ChannelListener {
     @Override
     public void onPacketReceived(Packet packet) {
 
-	final String sendingServer = packet.getFrom().getName();
+	//final String sendingServer = packet.getFrom().getName();
 	final Object data = packet.getObject();
 	if (data instanceof ServerData) {
 
