@@ -137,7 +137,6 @@ public class Config {
 			String[] y = node.split(",");
 			if (y.length == 2) {
 				x = rootnode.getNode(y[0], y[1]).getString();
-				;
 			} else if (y.length == 3) {
 				x = rootnode.getNode(y[0], y[1], y[2]).getString();
 			}

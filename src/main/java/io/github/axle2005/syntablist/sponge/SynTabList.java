@@ -2,17 +2,13 @@ package io.github.axle2005.syntablist.sponge;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-
 import org.slf4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.entity.living.player.tab.TabList;
 import org.spongepowered.api.entity.living.player.tab.TabListEntry;
 import org.spongepowered.api.event.Listener;
@@ -21,10 +17,6 @@ import org.spongepowered.api.event.game.state.GameLoadCompleteEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.profile.GameProfile;
-import org.spongepowered.api.profile.GameProfileManager;
-import org.spongepowered.api.scheduler.Scheduler;
-import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.scoreboard.Scoreboard;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -38,7 +30,6 @@ import java.util.Map;
 import io.github.axle2005.syntablist.common.PlayerData;
 import io.github.axle2005.syntablist.common.StaffData;
 import io.github.axle2005.syntablist.common.Utils;
-import io.github.axle2005.syntablist.common.PlayerData.Action;
 import io.github.axle2005.syntablist.common.ServerData;
 import io.github.axle2005.syntablist.common.ServerData.State;
 import io.github.axle2005.syntablist.sponge.commands.CommandRegister;
@@ -68,14 +59,10 @@ public class SynTabList implements ChannelListener {
 
     Config config;
 
-    Scheduler scheduler = Sponge.getScheduler();
-    Task.Builder taskBuilder = scheduler.createTaskBuilder();
-    Task task = null;
 
     private ListenerRegister events;
     private ListenerServerStart start;
     private Server server;
-    private GameProfileManager gpm;
     private Optional<TabListEntry> tabListEntry;
     private String channel;
     private String channelState = "State";
@@ -105,6 +92,8 @@ public class SynTabList implements ChannelListener {
 	globalStaff = config.getNodeBoolean("Broadcast Globally,Options,Staff");
 	globalPlayer = config.getNodeBoolean("Broadcast Globally,Options,Players");
 
+	
+	//Header Expands after 18 players
 	tabHeader = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Header")));
 	tabFooter = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer")));
 
@@ -115,8 +104,6 @@ public class SynTabList implements ChannelListener {
 	new CommandRegister(this);
 	events = new ListenerRegister(this);
 	start = new ListenerServerStart(this);
-
-	gpm = Sponge.getServer().getGameProfileManager();
 
 	if (!Utils.checkDummyFile("plugins/configs/syntablist")) {
 	    ServerData serverData = new ServerData(nodeName, State.CRASH);
@@ -154,7 +141,7 @@ public class SynTabList implements ChannelListener {
 
 	// Let's get the object from the packet
 	// final PlayerData playerData = packet.getObject(PlayerData.class);
-
+	
 	final Object data = packet.getObject();
 
 	PlayerData playerData = (PlayerData) data;
@@ -162,7 +149,10 @@ public class SynTabList implements ChannelListener {
 	switch (playerData.getAction()) {
 	case JOIN: {
 	    if ((playerData instanceof StaffData && globalStaff) || globalPlayer || !globalPlayer && getOnline(playerData)) {
-		playersData.put(playerData.getPlayerUUID(), playerData);
+		if(!playersData.containsKey(playerData.getPlayerUUID())){
+		    playersData.put(playerData.getPlayerUUID(), playerData);
+		}
+		
 	    }
 
 	    break;
@@ -173,27 +163,16 @@ public class SynTabList implements ChannelListener {
 	}
 	}
 
-	task = taskBuilder.execute(() -> {
-	    PlayerData pOnline;
-	    for (Player player : server.getOnlinePlayers()) {
-		
-		/*if(!playersData.containsKey(player.getUniqueId()))
-		{
-		    pOnline = new PlayerData(player.getName(), player.getUniqueId(), Action.JOIN);
-		    playersData.put(pOnline.getPlayerUUID(), pOnline);
-		}*/
-		
+	
+	for (Player player : server.getOnlinePlayers()) {
 		TabList tablist = player.getTabList();
 		tablist.setHeaderAndFooter(tabHeader, tabFooter);
 
 		// Checks if the player has been removed from playersData
 		// (Logged out) and removes from tablist
 		if (!playersData.containsKey(playerData.getPlayerUUID())) {
-		    removeTabList(tablist, playerData.getPlayerUUID());
+		    TabListUtil.removeTabList(tablist, playerData.getPlayerUUID());
 		}
-		
-		
-		
 		
 		for (PlayerData pData : playersData.values()) {
 
@@ -201,23 +180,10 @@ public class SynTabList implements ChannelListener {
 		    TabListEntry entry;
 		    if (tabListEntry.isPresent()) {
 			entry = tabListEntry.get();
-			handleData(pData, entry);
 		    } else {
 
-			entry = addTabList(player.getTabList(), pData.getPlayerUUID(),
+			entry = TabListUtil.addTabList(player.getTabList(), pData.getPlayerUUID(),
 				Text.of(TextColors.WHITE, pData.getPlayerName()), sendingServer);
-
-			/*
-			 * if (pData instanceof StaffData) {
-			 * 
-			 * DarkGreen.addMember(Text.of(pData.getPlayerName()));
-			 * entry.setDisplayName(Text.of(TextColors.DARK_GREEN,
-			 * pData.getPlayerName())); } else {
-			 * White.addMember(Text.of(pData.getPlayerName()));
-			 * entry.setDisplayName(Text.of(TextColors.WHITE,
-			 * pData.getPlayerName())); }
-			 */
-
 			tablist.addEntry(entry);
 
 		    }
@@ -227,38 +193,10 @@ public class SynTabList implements ChannelListener {
 
 		player.setScoreboard(scoreboard);
 	    }
-	}).async().submit(this);
+
 
     }
 
-    private TabListEntry addTabList(TabList tablist, UUID uuid, Text playername, String server) {
-	CompletableFuture<GameProfile> futureGameProfile = gpm.get(uuid);
-	try {
-	    GameProfile gp1 = futureGameProfile.get();
-	    TabListEntry entry = TabListEntry.builder().list(tablist).profile(gp1).gameMode(GameModes.SURVIVAL)
-		    .displayName(playername).build();
-	    return entry;
-	} catch (InterruptedException | ExecutionException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
-	}
-	/*
-	 * if (!gp.isPresent()) { GameProfile fakeProfile = GameProfile.of(uuid,
-	 * playername.toString());
-	 * 
-	 * gpm.getCache().add(fakeProfile); gp = gpm.getCache().getById(uuid); }
-	 */
-	return null;
-
-    }
-
-    private void removeTabList(TabList tablist, UUID uuid) {
-	tabListEntry = tablist.getEntry(uuid);
-	if (tabListEntry.isPresent()) {
-	    tablist.removeEntry(uuid);
-	}
-
-    }
 
     private void handleData(PlayerData p, TabListEntry entry) {
 	if (p instanceof StaffData) {
