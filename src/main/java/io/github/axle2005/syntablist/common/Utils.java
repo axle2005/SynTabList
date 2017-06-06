@@ -56,16 +56,29 @@ public class Utils {
 	}
 
 	public static void eventJoin(String channel, org.bukkit.entity.Player player) {
-		if (player.hasPermission("syntablist.hide.perm")) {
-			StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.QUIT, Rank.HIDDEN, true);
-			SynX.instance().broadcast(channel, staffData, System.currentTimeMillis() + 60000);
-		} else if (player.hasPermission("syntablist.senioradmin")) {
+		if (player.hasPermission("syntablist.senioradmin")) {
 			StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.SENIORADMIN,
+					false);
+			SynX.instance().broadcast(channel, staffData, System.currentTimeMillis() + 60000);
+		} else if (player.hasPermission("syntablist.admin")) {
+			StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.ADMIN,
+					false);
+			SynX.instance().broadcast(channel, staffData, System.currentTimeMillis() + 60000);
+		} else if (player.hasPermission("syntablist.mod")) {
+			StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.MOD,
+					false);
+			SynX.instance().broadcast(channel, staffData, System.currentTimeMillis() + 60000);
+		} else if (player.hasPermission("syntablist.helper")) {
+			StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.HELPER,
 					false);
 			SynX.instance().broadcast(channel, staffData, System.currentTimeMillis() + 60000);
 		} else {
 			PlayerData playerData = new PlayerData(player.getName(), player.getUniqueId(), Action.JOIN);
 			SynX.instance().broadcast(channel, playerData, System.currentTimeMillis() + 60000);
+		}
+		if (player.hasPermission("syntablist.hide.perm")) {
+			StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.QUIT, Rank.HIDDEN, true);
+			SynX.instance().broadcast(channel, staffData, System.currentTimeMillis() + 60000);
 		}
 	}
 

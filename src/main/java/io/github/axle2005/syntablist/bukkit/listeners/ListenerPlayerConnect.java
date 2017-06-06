@@ -23,7 +23,7 @@ public class ListenerPlayerConnect implements Listener {
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-
+		
 		Utils.eventJoin(CHANNEL, player);
 		
 		
