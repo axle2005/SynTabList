@@ -1,0 +1,2 @@
+# SynTabList
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/38210dd7b3dd4e6c96a07c4b7d373b17)](https://www.codacy.com/app/arnoldryan2005/SynTabList?utm_source=github.com&utm_medium=referral&utm_content=axle2005/SynTabList&utm_campaign=badger)
