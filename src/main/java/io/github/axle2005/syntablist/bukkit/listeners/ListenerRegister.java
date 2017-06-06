@@ -17,30 +17,4 @@ public class ListenerRegister {
 		disconnect = new ListenerPlayerDisconnect(plugin);
 
 	}
-
-	public void registerEvent(String event) {
-
-		if (event.equals("Connect")) {
-
-			Sponge.getEventManager().registerListeners(plugin, connect);
-		}
-		if (event.equals("Disconnect")) {
-
-			Sponge.getEventManager().registerListeners(plugin, disconnect);
-		}
-
-	}
-
-	public void unregisterEvent(String event) {
-
-		if (event.equals("Connect")) {
-
-			Sponge.getEventManager().unregisterListeners(connect);
-		}
-		if (event.equals("Disconnect")) {
-
-			Sponge.getEventManager().unregisterListeners(disconnect);
-		}
-
-	}
 }
