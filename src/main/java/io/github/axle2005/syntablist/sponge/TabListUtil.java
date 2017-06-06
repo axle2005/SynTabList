@@ -1,5 +1,11 @@
 package io.github.axle2005.syntablist.sponge;
 
+import static io.github.axle2005.syntablist.sponge.RankTeams.Aqua;
+import static io.github.axle2005.syntablist.sponge.RankTeams.DarkBlue;
+import static io.github.axle2005.syntablist.sponge.RankTeams.DarkGreen;
+import static io.github.axle2005.syntablist.sponge.RankTeams.LightPurple;
+import static io.github.axle2005.syntablist.sponge.RankTeams.White;
+
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -12,6 +18,10 @@ import org.spongepowered.api.entity.living.player.tab.TabListEntry;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.profile.GameProfileManager;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
+
+import io.github.axle2005.syntablist.common.PlayerData;
+import io.github.axle2005.syntablist.common.StaffData;
 
 public class TabListUtil {
 
@@ -27,13 +37,15 @@ public class TabListUtil {
 
     }
 
-    public static TabListEntry addTabList(TabList tablist, UUID uuid, Text playername, String server) {
+    public static TabListEntry addTabList(TabList tablist, UUID uuid, Text playername) {
 
 	CompletableFuture<GameProfile> futureGameProfile = gpm.get(uuid);
 	try {
 	    GameProfile gp1 = futureGameProfile.get();
 	    TabListEntry entry = TabListEntry.builder().list(tablist).profile(gp1).gameMode(GameModes.SURVIVAL)
 		    .displayName(playername).build();
+	    tablist.addEntry(entry);
+	    
 	    return entry;
 	} catch (InterruptedException | ExecutionException e) {
 	    // TODO Auto-generated catch block
@@ -74,5 +86,7 @@ public class TabListUtil {
     public static Text getFooter(){
 	return tabFooter;
     }
+
+
 
 }

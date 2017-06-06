@@ -9,7 +9,6 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.tab.TabList;
 import org.spongepowered.api.entity.living.player.tab.TabListEntry;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -26,6 +25,7 @@ import org.spongepowered.api.plugin.Dependency;
 import com.google.inject.Inject;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Map;
 import io.github.axle2005.syntablist.common.PlayerData;
 import io.github.axle2005.syntablist.common.StaffData;
@@ -71,9 +71,6 @@ public class SynTabList implements ChannelListener {
     TabListEntry entr;
 
     Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
-    Map<UUID, String> currentServer = new ConcurrentHashMap<>();
-
-    Map<UUID, TabListEntry.Builder> tabEntries = new ConcurrentHashMap<>();
 
     public static Scoreboard scoreboard = Scoreboard.builder().build();
 
@@ -157,18 +154,16 @@ public class SynTabList implements ChannelListener {
 		    
 
 		    for (Player player : server.getOnlinePlayers()) {
-			if (player.getUniqueId().equals(playerData.getPlayerUUID())) {
-			    for (PlayerData pData : playersData.values()) {
-				entr = TabListUtil.addTabList(player.getTabList(),pData.getPlayerUUID(), Text.of(pData.getPlayerName()), sendingServer);
-				player.getTabList().addEntry(entr);
-				handleData(playerData, tabListEntry.get());
-			    }
-
-			} else {
-			    entr = TabListUtil.addTabList(player.getTabList(),playerData.getPlayerUUID(), Text.of(playerData.getPlayerName()), sendingServer);
-			    player.getTabList().addEntry(entr);
-			    handleData(playerData, tabListEntry.get());
+			tabListEntry = player.getTabList().getEntry(playerData.getPlayerUUID());
+			if(!tabListEntry.isPresent()){
+			    handleData(playerData, TabListUtil.addTabList(player.getTabList(),playerData.getPlayerUUID(), Text.of(playerData.getPlayerName())));  
 			}
+			else
+			{
+			    handleData(playerData,tabListEntry.get());
+			}
+			validate(player);
+			
 
 		    }
 
@@ -181,7 +176,6 @@ public class SynTabList implements ChannelListener {
 	}
 	case QUIT: {
 	    playersData.remove(playerData.getPlayerUUID());
-	    tabEntries.remove(playerData.getPlayerUUID());
 
 	    // Checks if the player has been removed from playersData
 	    // (Logged out) and removes from tablist
@@ -196,7 +190,48 @@ public class SynTabList implements ChannelListener {
 
     }
 
-    private void handleData(PlayerData p, TabListEntry entry) {
+    private Boolean getOnline(PlayerData player) {
+	Optional<Player> optP = Sponge.getServer().getPlayer(player.getPlayerUUID());
+	if (optP.isPresent()) {
+	    return optP.get().isOnline();
+	}
+	return false;
+
+    }
+
+    private void validate(Player player){
+	if(player.getTabList().getEntries().size()< playersData.size()){
+		for (PlayerData pData : playersData.values()) {
+		    tabListEntry = player.getTabList().getEntry(pData.getPlayerUUID());
+			if(!tabListEntry.isPresent()){
+			    handleData(pData, TabListUtil.addTabList(player.getTabList(),pData.getPlayerUUID(), Text.of(pData.getPlayerName())));  
+			}
+			else
+			{
+			    handleData(pData,tabListEntry.get());
+			}
+		    }
+	}
+    }
+    
+    public Scoreboard getScoreboard() {
+	return scoreboard;
+    }
+
+    public Logger getLogger() {
+	return log;
+    }
+
+    public String getStateChannel() {
+	return channelState;
+    }
+
+    public String getChannel() {
+	return channel;
+    }
+    public Collection<PlayerData> getPlayerDataValues(){
+	return playersData.values();
+    }    public static void handleData(PlayerData p, TabListEntry entry) {
 	if (p instanceof StaffData) {
 	    StaffData s = (StaffData) p;
 	    switch (s.getRank()) {
@@ -242,28 +277,4 @@ public class SynTabList implements ChannelListener {
 
     }
 
-    private Boolean getOnline(PlayerData player) {
-	Optional<Player> optP = Sponge.getServer().getPlayer(player.getPlayerUUID());
-	if (optP.isPresent()) {
-	    return optP.get().isOnline();
-	}
-	return false;
-
-    }
-
-    public Scoreboard getScoreboard() {
-	return scoreboard;
-    }
-
-    public Logger getLogger() {
-	return log;
-    }
-
-    public String getStateChannel() {
-	return channelState;
-    }
-
-    public String getChannel() {
-	return channel;
-    }
 }

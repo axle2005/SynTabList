@@ -29,7 +29,9 @@ public class ListenerServerStart implements ChannelListener {
 	    switch (serverData.getState()) {
 	    case STOP: {
 
-		onlinePlayers("stop");
+		for(Player player : Sponge.getServer().getOnlinePlayers()){
+		    Utils.eventQuit(instance.getChannel(), player);
+		}
 		break;
 	    }
 	    case CRASH: {
@@ -37,23 +39,14 @@ public class ListenerServerStart implements ChannelListener {
 		break;
 	    }
 	    case START: {
-		onlinePlayers("start");
+		for(Player player : Sponge.getServer().getOnlinePlayers()){
+		    Utils.eventJoin(instance.getChannel(), player);
+		}
 		break;
 	    }
 	    }
 	}
 
-    }
-
-    private void onlinePlayers(String action) {
-
-	for (Player player : Sponge.getServer().getOnlinePlayers()) {
-	    if (action.equals("start")) {
-		Utils.eventJoin(instance.getStateChannel(), player);
-	    } else {
-		Utils.eventQuit(instance.getStateChannel(), player);
-	    }
-	}
     }
 
 }
