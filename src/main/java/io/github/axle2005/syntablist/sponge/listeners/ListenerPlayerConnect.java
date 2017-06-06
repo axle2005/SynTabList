@@ -27,8 +27,9 @@ public class ListenerPlayerConnect {
 		Utils.eventJoin(CHANNEL, player);
 
 		
-		//Needs to be moved, currently setting everytime a packet is recieved
+		
 		player.getTabList().setHeaderAndFooter(TabListUtil.getHeader(), TabListUtil.getFooter());
+		player.setScoreboard(plugin.getScoreboard());
 
 	}
 
