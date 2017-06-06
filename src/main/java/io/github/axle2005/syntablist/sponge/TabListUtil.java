@@ -42,6 +42,26 @@ public class TabListUtil {
 	return null;
 
     }
+    
+    public static TabListEntry.Builder addTabList(UUID uuid, Text playername) {
+
+	CompletableFuture<GameProfile> futureGameProfile = gpm.get(uuid);
+	try {
+	    GameProfile gp1 = futureGameProfile.get();
+	    TabListEntry.Builder entry = TabListEntry.builder().profile(gp1).gameMode(GameModes.SURVIVAL)
+		    .displayName(playername);
+	    return entry;
+	} catch (InterruptedException | ExecutionException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return null;
+
+    }
+    
+    public static TabListEntry addFakeEntry(TabList tablist){
+	return null;
+    }
     public static void setHeader(Text t){
 	tabHeader = t;
     }

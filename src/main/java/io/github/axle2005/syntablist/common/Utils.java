@@ -21,6 +21,7 @@ public class Utils {
 	Boolean isHidden = false;
 	if (player.hasPermission("syntablist.hide.perm"))
 	    isHidden = true;
+	
 
 	if (player.hasPermission("syntablist.senioradmin")) {
 	    StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.SENIORADMIN,

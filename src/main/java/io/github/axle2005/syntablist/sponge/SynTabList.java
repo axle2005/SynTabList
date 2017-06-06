@@ -59,7 +59,6 @@ public class SynTabList implements ChannelListener {
 
     Config config;
 
-
     private ListenerRegister events;
     private ListenerServerStart start;
     private Server server;
@@ -70,8 +69,11 @@ public class SynTabList implements ChannelListener {
     private Boolean globalStaff;
     private Boolean globalPlayer;
 
-
     Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
+    Map<UUID, String> currentServer = new ConcurrentHashMap<>();
+
+    Map<UUID, TabListEntry.Builder> tabEntries = new ConcurrentHashMap<>();
+
     public static Scoreboard scoreboard = Scoreboard.builder().build();
 
     @Listener
@@ -88,10 +90,11 @@ public class SynTabList implements ChannelListener {
 	globalStaff = config.getNodeBoolean("Broadcast Globally,Options,Staff");
 	globalPlayer = config.getNodeBoolean("Broadcast Globally,Options,Players");
 
-	
-	//Header Expands after 18 players
-	TabListUtil.setHeader(Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Header"))));
-	TabListUtil.setFooter(Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer"))));
+	// Header Expands after 18 players
+	TabListUtil.setHeader(
+		Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Header"))));
+	TabListUtil.setFooter(
+		Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer"))));
 
 	channel = "TabList";
 
@@ -137,62 +140,69 @@ public class SynTabList implements ChannelListener {
 
 	// Let's get the object from the packet
 	// final PlayerData playerData = packet.getObject(PlayerData.class);
-	
+
 	final Object data = packet.getObject();
 
 	PlayerData playerData = (PlayerData) data;
+	TabListEntry.Builder entr;
 
 	switch (playerData.getAction()) {
 	case JOIN: {
-	    if ((playerData instanceof StaffData && globalStaff) || globalPlayer || !globalPlayer && getOnline(playerData)) {
-		if(!playersData.containsKey(playerData.getPlayerUUID())){
+	    if ((playerData instanceof StaffData && globalStaff) || globalPlayer
+		    || !globalPlayer && getOnline(playerData)) {
+
+		if (!playersData.containsKey(playerData.getPlayerUUID())) {
 		    playersData.put(playerData.getPlayerUUID(), playerData);
+
+		    entr = TabListUtil.addTabList(playerData.getPlayerUUID(), Text.of(playerData.getPlayerName()));
+		    tabEntries.put(playerData.getPlayerUUID(), entr);
+
 		}
-		
+
 	    }
 
 	    break;
+
 	}
 	case QUIT: {
 	    playersData.remove(playerData.getPlayerUUID());
+	    tabEntries.remove(playerData.getPlayerUUID());
 	    break;
 	}
 	}
 
-	
 	for (Player player : server.getOnlinePlayers()) {
-		TabList tablist = player.getTabList();
-		tablist.setHeaderAndFooter(TabListUtil.getHeader(), TabListUtil.getFooter());
-
-		// Checks if the player has been removed from playersData
-		// (Logged out) and removes from tablist
-		if (!playersData.containsKey(playerData.getPlayerUUID())) {
-		    TabListUtil.removeTabList(tablist, playerData.getPlayerUUID());
-		}
-		
-		for (PlayerData pData : playersData.values()) {
-
-		    tabListEntry = tablist.getEntry(pData.getPlayerUUID());
-		    TabListEntry entry;
-		    if (tabListEntry.isPresent()) {
-			entry = tabListEntry.get();
-		    } else {
-
-			entry = TabListUtil.addTabList(player.getTabList(), pData.getPlayerUUID(),
-				Text.of(TextColors.WHITE, pData.getPlayerName()), sendingServer);
-			tablist.addEntry(entry);
-
-		    }
-
-		    handleData(pData, entry);
-		}
-
-		player.setScoreboard(scoreboard);
+	    // Checks if the player has been removed from playersData
+	    // (Logged out) and removes from tablist
+	    if (!playersData.containsKey(playerData.getPlayerUUID())) {
+		TabListUtil.removeTabList(player.getTabList(), playerData.getPlayerUUID());
 	    }
 
+	    for (PlayerData pData : playersData.values()) {
+
+		tabListEntry = player.getTabList().getEntry(pData.getPlayerUUID());
+		if (!tabListEntry.isPresent()) {
+		    player.getTabList().addEntry(tabEntries.get(pData.getPlayerUUID()).list(player.getTabList()).build());
+		}
+		handleData(pData, tabListEntry.get());
+
+	    }
+
+	    player.setScoreboard(scoreboard);
+
+	    /*
+	     * if (pData instanceof StaffData && (((StaffData) pData).isHidden()
+	     * && !player.hasPermission("syntablist.hide.overwrite"))) { if
+	     * (tabListEntry.isPresent()) {
+	     * 
+	     * tablist.removeEntry(pData.getPlayerUUID()); } } else {
+	     * 
+	     * }
+	     */
+
+	}
 
     }
-
 
     private void handleData(PlayerData p, TabListEntry entry) {
 	if (p instanceof StaffData) {
@@ -248,6 +258,7 @@ public class SynTabList implements ChannelListener {
 	return false;
 
     }
+
     public Logger getLogger() {
 	return log;
     }

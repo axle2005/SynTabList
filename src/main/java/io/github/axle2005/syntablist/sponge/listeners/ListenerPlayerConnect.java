@@ -5,6 +5,7 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 
 import io.github.axle2005.syntablist.sponge.SynTabList;
+import io.github.axle2005.syntablist.sponge.TabListUtil;
 import io.github.axle2005.syntablist.common.Utils;
 
 public class ListenerPlayerConnect {
@@ -26,6 +27,8 @@ public class ListenerPlayerConnect {
 		Utils.eventJoin(CHANNEL, player);
 
 		
+		//Needs to be moved, currently setting everytime a packet is recieved
+		player.getTabList().setHeaderAndFooter(TabListUtil.getHeader(), TabListUtil.getFooter());
 
 	}
 
