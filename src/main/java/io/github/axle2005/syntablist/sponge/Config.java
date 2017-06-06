@@ -4,8 +4,6 @@ package io.github.axle2005.syntablist.sponge;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import ninja.leaping.configurate.ConfigurationNode;
@@ -21,11 +19,6 @@ public class Config {
 	File activeConfig;
 	CommentedConfigurationNode rootnode;
 	ConfigurationLoader<CommentedConfigurationNode> configManager;
-
-	List<String> entitylist;
-	List<String> listEntityDefaults = new ArrayList<String>(Arrays.asList("minecraft:zombie", "minecraft:witch",
-			"minecraft:skeleton", "minecraft:creeper", "minecraft:arrow"));
-	List<String> listTileDefaults = new ArrayList<String>(Arrays.asList("PlaceHolder"));
 
 	public Config(SynTabList plugin) {
 		this.plugin = plugin;
