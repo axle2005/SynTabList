@@ -68,6 +68,7 @@ public class SynTabList implements ChannelListener {
     private String nodeName;
     private Boolean globalStaff;
     private Boolean globalPlayer;
+    TabListEntry.Builder entr;
 
     Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
     Map<UUID, String> currentServer = new ConcurrentHashMap<>();
@@ -144,7 +145,7 @@ public class SynTabList implements ChannelListener {
 	final Object data = packet.getObject();
 
 	PlayerData playerData = (PlayerData) data;
-	TabListEntry.Builder entr;
+	
 
 	switch (playerData.getAction()) {
 	case JOIN: {
