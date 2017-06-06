@@ -25,7 +25,6 @@ import org.spongepowered.api.plugin.Dependency;
 import com.google.inject.Inject;
 
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.Map;
 import io.github.axle2005.syntablist.common.PlayerData;
 import io.github.axle2005.syntablist.common.StaffData;
@@ -92,7 +91,6 @@ public class SynTabList implements ChannelListener {
 	TabListUtil.setFooter(
 		Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer"))));
 
-
 	nodeName = SynX.instance().getNode().getName();
 
 	new CommandRegister(this);
@@ -148,19 +146,19 @@ public class SynTabList implements ChannelListener {
 		if (!playersData.containsKey(playerData.getPlayerUUID())) {
 		    playersData.put(playerData.getPlayerUUID(), playerData);
 
-		    
-
 		    for (Player player : server.getOnlinePlayers()) {
 			tabListEntry = player.getTabList().getEntry(playerData.getPlayerUUID());
-			if(!tabListEntry.isPresent()){
-			    handleData(playerData, TabListUtil.addTabList(player.getTabList(),playerData.getPlayerUUID(), Text.of(playerData.getPlayerName())));  
-			}
-			else
-			{
-			    handleData(playerData,tabListEntry.get());
+			if (tabListEntry.isPresent()) {
+			    handleData(playerData, tabListEntry.get());
+			} else {
+
+			    entr = TabListUtil.addTabList(player.getTabList(), playerData.getPlayerUUID(),
+				    Text.of(playerData.getPlayerName()));
+			    player.getTabList().addEntry(entr);
+			    handleData(playerData, entr);
 			}
 			validate(player);
-			
+			player.setScoreboard(scoreboard);
 
 		    }
 
@@ -196,21 +194,23 @@ public class SynTabList implements ChannelListener {
 
     }
 
-    private void validate(Player player){
-	if(player.getTabList().getEntries().size()< playersData.size()){
-		for (PlayerData pData : playersData.values()) {
-		    tabListEntry = player.getTabList().getEntry(pData.getPlayerUUID());
-			if(!tabListEntry.isPresent()){
-			    handleData(pData, TabListUtil.addTabList(player.getTabList(),pData.getPlayerUUID(), Text.of(pData.getPlayerName())));  
-			}
-			else
-			{
-			    handleData(pData,tabListEntry.get());
-			}
-		    }
+    private void validate(Player player) {
+	if (player.getTabList().getEntries().size() < playersData.size()) {
+	    for (PlayerData pData : playersData.values()) {
+		tabListEntry = player.getTabList().getEntry(pData.getPlayerUUID());
+		if (tabListEntry.isPresent()) {
+		    handleData(pData, tabListEntry.get());
+		} else {
+
+		    entr = TabListUtil.addTabList(player.getTabList(), pData.getPlayerUUID(),
+			    Text.of(pData.getPlayerName()));
+		    player.getTabList().addEntry(entr);
+		    handleData(pData, entr);
+		}
+	    }
 	}
     }
-    
+
     public Scoreboard getScoreboard() {
 	return scoreboard;
     }
@@ -218,9 +218,8 @@ public class SynTabList implements ChannelListener {
     public Logger getLogger() {
 	return log;
     }
-    public Collection<PlayerData> getPlayerDataValues(){
-	return playersData.values();
-    }    public static void handleData(PlayerData p, TabListEntry entry) {
+
+    public static void handleData(PlayerData p, TabListEntry entry) {
 	if (p instanceof StaffData) {
 	    StaffData s = (StaffData) p;
 	    switch (s.getRank()) {

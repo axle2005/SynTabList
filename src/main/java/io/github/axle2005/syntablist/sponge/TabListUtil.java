@@ -35,8 +35,6 @@ public class TabListUtil {
 	    GameProfile gp1 = futureGameProfile.get();
 	    TabListEntry entry = TabListEntry.builder().list(tablist).profile(gp1).gameMode(GameModes.SURVIVAL)
 		    .displayName(playername).build();
-	    tablist.addEntry(entry);
-	    
 	    return entry;
 	} catch (InterruptedException | ExecutionException e) {
 	    // TODO Auto-generated catch block

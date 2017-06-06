@@ -20,36 +20,17 @@ public class Utils {
     public static String getStateChannel(){
 	return channelState;
     }
-    public static PlayerData isStaff(Player player) {
-	Boolean isHidden = false;
-	if (player.hasPermission("syntablist.hide.perm"))
-	    isHidden = true;
-	PlayerData playerData;
-
-	if (player.hasPermission("syntablist.senioradmin")) {
-	    playerData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.SENIORADMIN,
-		    isHidden);
-	} else if (player.hasPermission("syntablist.admin")) {
-	    playerData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.ADMIN,
-		    isHidden);
-	} else if (player.hasPermission("syntablist.mod")) {
-	    playerData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.MOD,
-		    isHidden);
-	} else if (player.hasPermission("syntablist.helper")) {
-	    playerData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.HELPER,
-		    isHidden);
-	} else {
-	    playerData = new PlayerData(player.getName(), player.getUniqueId(), Action.JOIN);
-	}
-	return playerData;
-
+    
+    public static void eventQuit(String channel, Player player) {
+	PlayerData playerData = new PlayerData(player.getName(), player.getUniqueId(), Action.QUIT);
+	SynX.instance().broadcast(channel, playerData, System.currentTimeMillis() + 60000);
     }
 
+    //Sponge implementation
     public static void eventJoin(String channel, Player player) {
 	Boolean isHidden = false;
 	if (player.hasPermission("syntablist.hide.perm"))
 	    isHidden = true;
-	
 
 	if (player.hasPermission("syntablist.senioradmin")) {
 	    StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.SENIORADMIN,
@@ -69,21 +50,12 @@ public class Utils {
 	    SynX.instance().broadcast(channel, staffData, System.currentTimeMillis() + 60000);
 	} else {
 	    PlayerData playerData = new PlayerData(player.getName(), player.getUniqueId(), Action.JOIN);
-	    
+	    SynX.instance().broadcast(channel, playerData, System.currentTimeMillis() + 60000);
 	}
 
     }
-
-    public static void eventQuit(String channel, Player player) {
-	// we want to send the player's data to the other servers so they can
-	// show a message to everyone
-	PlayerData playerData = new PlayerData(player.getName(), player.getUniqueId(), Action.QUIT);
-
-	// broadcast data to the JPlayer channel - all servers will receive a
-	// packet with this data!
-	SynX.instance().broadcast(channel, playerData, System.currentTimeMillis() + 60000);
-    }
-
+    
+    //Bukkit Implementation 
     public static void eventJoin(String channel, org.bukkit.entity.Player player) {
 	if (player.hasPermission("syntablist.senioradmin")) {
 	    StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.SENIORADMIN,
