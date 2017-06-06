@@ -158,6 +158,15 @@ public class SynTabList implements ChannelListener {
 		    entr = TabListUtil.addTabList(playerData.getPlayerUUID(), Text.of(playerData.getPlayerName()));
 		    tabEntries.put(playerData.getPlayerUUID(), entr);
 
+		    for (Player player : server.getOnlinePlayers()) {
+			tabListEntry = player.getTabList().getEntry(playerData.getPlayerUUID());
+			if (!tabListEntry.isPresent()) {
+			    player.getTabList().addEntry(tabEntries.get(playerData.getPlayerUUID()).list(player.getTabList()).build());
+			}
+			handleData(playerData, tabListEntry.get());
+		    }
+		    
+		    
 		}
 
 	    }
@@ -168,39 +177,20 @@ public class SynTabList implements ChannelListener {
 	case QUIT: {
 	    playersData.remove(playerData.getPlayerUUID());
 	    tabEntries.remove(playerData.getPlayerUUID());
-	    break;
-	}
-	}
-
-	for (Player player : server.getOnlinePlayers()) {
+	    
+	    
+	    
 	    // Checks if the player has been removed from playersData
 	    // (Logged out) and removes from tablist
-	    if (!playersData.containsKey(playerData.getPlayerUUID())) {
-		TabListUtil.removeTabList(player.getTabList(), playerData.getPlayerUUID());
+	    for(Player player : server.getOnlinePlayers()){
+		if (!playersData.containsKey(playerData.getPlayerUUID())) {
+			TabListUtil.removeTabList(player.getTabList(), playerData.getPlayerUUID());
+		    }
 	    }
-
-	    for (PlayerData pData : playersData.values()) {
-
-		tabListEntry = player.getTabList().getEntry(pData.getPlayerUUID());
-		if (!tabListEntry.isPresent()) {
-		    player.getTabList().addEntry(tabEntries.get(pData.getPlayerUUID()).list(player.getTabList()).build());
-		}
-		handleData(pData, tabListEntry.get());
-
-	    }
-
-	    player.setScoreboard(scoreboard);
-
-	    /*
-	     * if (pData instanceof StaffData && (((StaffData) pData).isHidden()
-	     * && !player.hasPermission("syntablist.hide.overwrite"))) { if
-	     * (tabListEntry.isPresent()) {
-	     * 
-	     * tablist.removeEntry(pData.getPlayerUUID()); } } else {
-	     * 
-	     * }
-	     */
-
+	    
+	    
+	    break;
+	}
 	}
 
     }
@@ -258,6 +248,9 @@ public class SynTabList implements ChannelListener {
 	}
 	return false;
 
+    }
+    public Scoreboard getScoreboard(){
+	return scoreboard;
     }
 
     public Logger getLogger() {
