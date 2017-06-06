@@ -70,12 +70,8 @@ public class SynTabList implements ChannelListener {
     private Boolean globalStaff;
     private Boolean globalPlayer;
 
-    Text tabHeader;
-    Text tabFooter;
-    Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
-    Map<UUID, StaffData> staffsData = new ConcurrentHashMap<>();
-    Map<UUID, Text> rankData = new ConcurrentHashMap<>();
 
+    Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
     public static Scoreboard scoreboard = Scoreboard.builder().build();
 
     @Listener
@@ -94,8 +90,8 @@ public class SynTabList implements ChannelListener {
 
 	
 	//Header Expands after 18 players
-	tabHeader = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Header")));
-	tabFooter = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer")));
+	TabListUtil.setHeader(Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Header"))));
+	TabListUtil.setFooter(Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer"))));
 
 	channel = "TabList";
 
@@ -166,7 +162,7 @@ public class SynTabList implements ChannelListener {
 	
 	for (Player player : server.getOnlinePlayers()) {
 		TabList tablist = player.getTabList();
-		tablist.setHeaderAndFooter(tabHeader, tabFooter);
+		tablist.setHeaderAndFooter(TabListUtil.getHeader(), TabListUtil.getFooter());
 
 		// Checks if the player has been removed from playersData
 		// (Logged out) and removes from tablist
@@ -252,15 +248,6 @@ public class SynTabList implements ChannelListener {
 	return false;
 
     }
-
-    public Text getHeader() {
-	return tabHeader;
-    }
-
-    public Text getFooter() {
-	return tabFooter;
-    }
-
     public Logger getLogger() {
 	return log;
     }

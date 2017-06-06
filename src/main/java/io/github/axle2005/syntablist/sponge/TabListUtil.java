@@ -15,6 +15,8 @@ import org.spongepowered.api.text.Text;
 
 public class TabListUtil {
 
+    static Text tabHeader;
+    static Text tabFooter;
     final static GameProfileManager gpm = Sponge.getServer().getGameProfileManager();
 
     public static void removeTabList(TabList tablist, UUID uuid) {
@@ -39,6 +41,18 @@ public class TabListUtil {
 	}
 	return null;
 
+    }
+    public static void setHeader(Text t){
+	tabHeader = t;
+    }
+    public static void setFooter(Text t){
+	tabFooter = t;
+    }
+    public static Text getHeader(){
+	return tabHeader;
+    }
+    public static Text getFooter(){
+	return tabFooter;
     }
 
 }
