@@ -11,10 +11,10 @@ import net.kaikk.mc.synx.packets.Packet;
 
 public class ListenerServerStart implements ChannelListener {
 
-    SynTabList instance;
+
 
     public ListenerServerStart(SynTabList instance) {
-	this.instance = instance;
+
     }
 
     @Override
@@ -30,7 +30,7 @@ public class ListenerServerStart implements ChannelListener {
 	    case STOP: {
 
 		for(Player player : Sponge.getServer().getOnlinePlayers()){
-		    Utils.eventQuit(instance.getChannel(), player);
+		    Utils.eventQuit(Utils.getChannel(), player);
 		}
 		break;
 	    }
@@ -40,7 +40,7 @@ public class ListenerServerStart implements ChannelListener {
 	    }
 	    case START: {
 		for(Player player : Sponge.getServer().getOnlinePlayers()){
-		    Utils.eventJoin(instance.getChannel(), player);
+		    Utils.eventJoin(Utils.getChannel(), player);
 		}
 		break;
 	    }

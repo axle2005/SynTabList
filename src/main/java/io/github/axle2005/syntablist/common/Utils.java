@@ -11,12 +11,15 @@ import net.kaikk.mc.synx.SynX;
 
 public class Utils {
 
-    private static String channel = "TabList";
-
+    private static final String channel = "TabList";
+    private static final String channelState = "State";
+    
     public static String getChannel() {
 	return channel;
     }
-    
+    public static String getStateChannel(){
+	return channelState;
+    }
     public static PlayerData isStaff(Player player) {
 	Boolean isHidden = false;
 	if (player.hasPermission("syntablist.hide.perm"))

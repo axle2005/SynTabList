@@ -63,8 +63,6 @@ public class SynTabList implements ChannelListener {
     private ListenerServerStart start;
     private Server server;
     private Optional<TabListEntry> tabListEntry;
-    private String channel;
-    private String channelState = "State";
     private String nodeName;
     private Boolean globalStaff;
     private Boolean globalPlayer;
@@ -94,7 +92,6 @@ public class SynTabList implements ChannelListener {
 	TabListUtil.setFooter(
 		Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer"))));
 
-	channel = "TabList";
 
 	nodeName = SynX.instance().getNode().getName();
 
@@ -104,7 +101,7 @@ public class SynTabList implements ChannelListener {
 
 	if (!Utils.checkDummyFile("plugins/configs/syntablist")) {
 	    ServerData serverData = new ServerData(nodeName, State.CRASH);
-	    SynX.instance().broadcast(channelState, serverData, System.currentTimeMillis() + 60000);
+	    SynX.instance().broadcast(Utils.getStateChannel(), serverData, System.currentTimeMillis() + 60000);
 	}
 
     }
@@ -112,14 +109,14 @@ public class SynTabList implements ChannelListener {
     @Listener
     public void onLoad(GameLoadCompleteEvent event) {
 
-	SynX.instance().register(this, channel, this);
-	SynX.instance().register(this, channelState, start);
+	SynX.instance().register(this, Utils.getChannel(), this);
+	SynX.instance().register(this, Utils.getStateChannel(), start);
 
 	events.registerEvent("Connect");
 	events.registerEvent("Disconnect");
 
 	ServerData serverData = new ServerData(nodeName, State.START);
-	SynX.instance().broadcast(channelState, serverData, System.currentTimeMillis() + 60000);
+	SynX.instance().broadcast(Utils.getStateChannel(), serverData, System.currentTimeMillis() + 60000);
 
     }
 
@@ -220,14 +217,6 @@ public class SynTabList implements ChannelListener {
 
     public Logger getLogger() {
 	return log;
-    }
-
-    public String getStateChannel() {
-	return channelState;
-    }
-
-    public String getChannel() {
-	return channel;
     }
     public Collection<PlayerData> getPlayerDataValues(){
 	return playersData.values();

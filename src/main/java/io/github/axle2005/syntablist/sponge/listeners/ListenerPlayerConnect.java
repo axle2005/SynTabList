@@ -1,7 +1,6 @@
 package io.github.axle2005.syntablist.sponge.listeners;
 
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.tab.TabListEntry;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import io.github.axle2005.syntablist.sponge.SynTabList;
@@ -10,13 +9,11 @@ import io.github.axle2005.syntablist.common.Utils;
 
 public class ListenerPlayerConnect {
 
-	private static String CHANNEL;
+	private static final String CHANNEL = Utils.getChannel();
 
-	SynTabList plugin;
-	TabListEntry entr;
+	private SynTabList plugin;
 	public ListenerPlayerConnect(SynTabList plugin) {
 		this.plugin = plugin;
-		CHANNEL = plugin.getChannel();
 	}
 
 	@Listener
