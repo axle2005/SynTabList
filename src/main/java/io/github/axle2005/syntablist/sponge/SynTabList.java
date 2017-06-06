@@ -68,7 +68,7 @@ public class SynTabList implements ChannelListener {
     private String nodeName;
     private Boolean globalStaff;
     private Boolean globalPlayer;
-    TabListEntry.Builder entr;
+    TabListEntry entr;
 
     Map<UUID, PlayerData> playersData = new ConcurrentHashMap<>();
     Map<UUID, String> currentServer = new ConcurrentHashMap<>();
@@ -154,18 +154,19 @@ public class SynTabList implements ChannelListener {
 		if (!playersData.containsKey(playerData.getPlayerUUID())) {
 		    playersData.put(playerData.getPlayerUUID(), playerData);
 
-		    entr = TabListUtil.addTabList(playerData.getPlayerUUID(), Text.of(playerData.getPlayerName()));
+		    
 
 		    for (Player player : server.getOnlinePlayers()) {
 			if (player.getUniqueId().equals(playerData.getPlayerUUID())) {
 			    for (PlayerData pData : playersData.values()) {
-				entr = TabListUtil.addTabList(playerData.getPlayerUUID(),
-					Text.of(playerData.getPlayerName()));
+				entr = TabListUtil.addTabList(player.getTabList(),pData.getPlayerUUID(), Text.of(pData.getPlayerName()), sendingServer);
+				player.getTabList().addEntry(entr);
 				handleData(playerData, tabListEntry.get());
 			    }
 
 			} else {
-			    player.getTabList().addEntry(entr.list(player.getTabList()).build());
+			    entr = TabListUtil.addTabList(player.getTabList(),playerData.getPlayerUUID(), Text.of(playerData.getPlayerName()), sendingServer);
+			    player.getTabList().addEntry(entr);
 			    handleData(playerData, tabListEntry.get());
 			}
 
