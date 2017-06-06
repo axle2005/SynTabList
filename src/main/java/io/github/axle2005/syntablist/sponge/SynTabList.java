@@ -38,6 +38,7 @@ import java.util.Map;
 import io.github.axle2005.syntablist.common.PlayerData;
 import io.github.axle2005.syntablist.common.StaffData;
 import io.github.axle2005.syntablist.common.Utils;
+import io.github.axle2005.syntablist.common.PlayerData.Action;
 import io.github.axle2005.syntablist.common.ServerData;
 import io.github.axle2005.syntablist.common.ServerData.State;
 import io.github.axle2005.syntablist.sponge.commands.CommandRegister;
@@ -100,15 +101,15 @@ public class SynTabList implements ChannelListener {
 	server = Sponge.getServer();
 
 	config = new Config(this, defaultConfig, configManager);
-	
+
 	globalStaff = config.getNodeBoolean("Broadcast Globally,Options,Staff");
 	globalPlayer = config.getNodeBoolean("Broadcast Globally,Options,Players");
 
 	tabHeader = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Header")));
 	tabFooter = Text.of(TextSerializers.formattingCode('&').deserialize(config.getNodeString("TabList,Footer")));
-	
-	channel="TabList";
-	
+
+	channel = "TabList";
+
 	nodeName = SynX.instance().getNode().getName();
 
 	new CommandRegister(this);
@@ -129,7 +130,7 @@ public class SynTabList implements ChannelListener {
 
 	SynX.instance().register(this, channel, this);
 	SynX.instance().register(this, channelState, start);
-	
+
 	events.registerEvent("Connect");
 	events.registerEvent("Disconnect");
 
@@ -150,7 +151,6 @@ public class SynTabList implements ChannelListener {
     public void onPacketReceived(Packet packet) {
 	// This is the server that sent this packet
 	final String sendingServer = packet.getFrom().getName();
-	
 
 	// Let's get the object from the packet
 	// final PlayerData playerData = packet.getObject(PlayerData.class);
@@ -161,9 +161,10 @@ public class SynTabList implements ChannelListener {
 
 	switch (playerData.getAction()) {
 	case JOIN: {
-	    if((playerData instanceof StaffData && globalStaff)||globalPlayer){
+	    if ((playerData instanceof StaffData && globalStaff) || globalPlayer || !globalPlayer && getOnline(playerData)) {
 		playersData.put(playerData.getPlayerUUID(), playerData);
 	    }
+
 	    break;
 	}
 	case QUIT: {
@@ -173,9 +174,16 @@ public class SynTabList implements ChannelListener {
 	}
 
 	task = taskBuilder.execute(() -> {
+	    PlayerData pOnline;
 	    for (Player player : server.getOnlinePlayers()) {
+		
+		/*if(!playersData.containsKey(player.getUniqueId()))
+		{
+		    pOnline = new PlayerData(player.getName(), player.getUniqueId(), Action.JOIN);
+		    playersData.put(pOnline.getPlayerUUID(), pOnline);
+		}*/
+		
 		TabList tablist = player.getTabList();
-
 		tablist.setHeaderAndFooter(tabHeader, tabFooter);
 
 		// Checks if the player has been removed from playersData
@@ -183,7 +191,10 @@ public class SynTabList implements ChannelListener {
 		if (!playersData.containsKey(playerData.getPlayerUUID())) {
 		    removeTabList(tablist, playerData.getPlayerUUID());
 		}
-
+		
+		
+		
+		
 		for (PlayerData pData : playersData.values()) {
 
 		    tabListEntry = tablist.getEntry(pData.getPlayerUUID());
@@ -206,15 +217,15 @@ public class SynTabList implements ChannelListener {
 			 * entry.setDisplayName(Text.of(TextColors.WHITE,
 			 * pData.getPlayerName())); }
 			 */
-			
-			
+
 			tablist.addEntry(entry);
-			
 
 		    }
+
 		    handleData(pData, entry);
-		    player.setScoreboard(scoreboard);
 		}
+
+		player.setScoreboard(scoreboard);
 	    }
 	}).async().submit(this);
 
@@ -292,6 +303,15 @@ public class SynTabList implements ChannelListener {
 	    White.addMember(Text.of(p.getPlayerName()));
 	    entry.setDisplayName(Text.of(TextColors.WHITE, p.getPlayerName()));
 	}
+
+    }
+
+    private Boolean getOnline(PlayerData player) {
+	Optional<Player> optP = Sponge.getServer().getPlayer(player.getPlayerUUID());
+	if (optP.isPresent()) {
+	    return optP.get().isOnline();
+	}
+	return false;
 
     }
 
