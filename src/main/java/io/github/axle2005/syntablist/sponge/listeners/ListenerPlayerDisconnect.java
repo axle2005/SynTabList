@@ -16,8 +16,7 @@ public class ListenerPlayerDisconnect {
 	private static final String CHANNEL = Utils.getChannel();
 	
 
-	public ListenerPlayerDisconnect(SynTabList plugin) {
-		this.plugin = plugin;
+	public ListenerPlayerDisconnect() {
 	}
 	
 	@Listener(beforeModifications = true)
@@ -27,10 +26,8 @@ public class ListenerPlayerDisconnect {
 		
 
 		// we want to send the player's data to the other servers so they can show a message to everyone
-		PlayerData playerData = new PlayerData(player.getName(), player.getUniqueId(),Action.QUIT);
-		
 		// broadcast data to the JPlayer channel - all servers will receive a packet with this data!
-		SynX.instance().broadcast(CHANNEL, playerData,System.currentTimeMillis()+60000);
+		SynX.instance().broadcast(CHANNEL, new PlayerData(player.getName(), player.getUniqueId(),Action.QUIT),System.currentTimeMillis()+60000);
 
 	}
 

@@ -9,10 +9,9 @@ public class ListenerRegister {
 	ListenerPlayerConnect connect;
 	ListenerPlayerDisconnect disconnect;
 
-	public ListenerRegister(SynTabList plugin) {
-		this.plugin = plugin;
-		connect = new ListenerPlayerConnect(plugin);
-		disconnect = new ListenerPlayerDisconnect(plugin);
+	public ListenerRegister() {
+		connect = new ListenerPlayerConnect();
+		disconnect = new ListenerPlayerDisconnect();
 
 	}
 }

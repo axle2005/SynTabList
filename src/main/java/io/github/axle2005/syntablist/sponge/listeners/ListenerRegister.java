@@ -13,8 +13,8 @@ import io.github.axle2005.syntablist.sponge.SynTabList;
 
 		public ListenerRegister(SynTabList plugin) {
 			this.plugin = plugin;
-			connect = new ListenerPlayerConnect(plugin);
-			disconnect = new ListenerPlayerDisconnect(plugin);
+			connect = new ListenerPlayerConnect();
+			disconnect = new ListenerPlayerDisconnect();
 
 		}
 
