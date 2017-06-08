@@ -1,7 +1,8 @@
-package io.github.axle2005.syntablist.sponge.listeners;
+package io.github.axle2005.syntablist.bukkit.listeners;
 
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.Player;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import io.github.axle2005.syntablist.common.PlayerData;
 import io.github.axle2005.syntablist.common.PlayerData.Action;
@@ -29,9 +30,7 @@ public class ListenerServerStart implements ChannelListener {
 	switch (serverData.getState()) {
 	case STOP: {
 
-	    for (Player player : Sponge.getServer().getOnlinePlayers()) {
-		
-	    }
+	   //Bukkit does not need to handle this yet, as Bukkit does not have a tablist. 
 	    break;
 	}
 	case CRASH: {
@@ -39,7 +38,7 @@ public class ListenerServerStart implements ChannelListener {
 	    break;
 	}
 	case START: {
-	    for (Player player : Sponge.getServer().getOnlinePlayers()) {
+	    for (Player player : Bukkit.getServer().getOnlinePlayers()) {
 		//Use send so that it only sends to the requesting node. 
 		if(player.hasPermission("syntablist.staff")){
 		    SynX.instance().send(Utils.getChannel(),Utils.getStaffData(player, Action.JOIN) , System.currentTimeMillis() + 60000, packet.getFrom());

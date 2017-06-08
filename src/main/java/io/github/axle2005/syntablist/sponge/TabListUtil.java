@@ -2,6 +2,9 @@ package io.github.axle2005.syntablist.sponge;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.entity.living.player.tab.TabList;
@@ -14,6 +17,8 @@ public class TabListUtil {
 
     static Text tabHeader;
     static Text tabFooter;
+    
+    static Text tabStaffHeader;
 
     final static GameProfileManager gpm = Sponge.getServer().getGameProfileManager();
 
@@ -26,9 +31,19 @@ public class TabListUtil {
     }
 
     public static TabListEntry addTabList(TabList tablist, UUID uuid, Text playername) {
-	return TabListEntry.builder().list(tablist).profile(GameProfile.of(uuid, "")).gameMode(GameModes.SURVIVAL)
-		.displayName(playername).build();
+
+	CompletableFuture<GameProfile> futureGameProfile = gpm.get(uuid);
+	try {
+	    GameProfile gp1 = futureGameProfile.get();
+	    TabListEntry entry = TabListEntry.builder().list(tablist).profile(gp1).gameMode(GameModes.SURVIVAL).displayName(playername).build();
+	    return entry;
+	} catch (InterruptedException | ExecutionException e) {
+
+	    e.printStackTrace();
+	}
+	return null;
     }
+
 
     public static TabListEntry addFakeEntry(TabList tablist, int fakeUUID) {
 
@@ -52,5 +67,13 @@ public class TabListUtil {
     public static Text getFooter() {
 	return tabFooter;
     }
+    public static Text getStaffHeader(){
+	return tabStaffHeader;
+    }
+    public static void setStaffHeader(Text staff){
+	tabStaffHeader = staff;
+    }
+    
+    
 
 }

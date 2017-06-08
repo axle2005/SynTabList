@@ -13,20 +13,21 @@ public class Utils {
 
     private static final String channel = "TabList";
     private static final String channelState = "State";
-    
+
     public static String getChannel() {
 	return channel;
     }
-    public static String getStateChannel(){
+
+    public static String getStateChannel() {
 	return channelState;
     }
-    
+
     public static void eventQuit(String channel, Player player) {
 	PlayerData playerData = new PlayerData(player.getName(), player.getUniqueId(), Action.QUIT);
 	SynX.instance().broadcast(channel, playerData, System.currentTimeMillis() + 60000);
     }
 
-    //Sponge implementation
+    // Sponge implementation
     public static void eventJoin(String channel, Player player) {
 	Boolean isHidden = false;
 	if (player.hasPermission("syntablist.hide.perm"))
@@ -54,8 +55,58 @@ public class Utils {
 	}
 
     }
-    
-    //Bukkit Implementation 
+
+    // Sponge implementation
+    public static StaffData getStaffData(Player player, Action action) {
+	Boolean isHidden = false;
+	StaffData staffData;
+	if (player.hasPermission("syntablist.hide.perm"))
+	    isHidden = true;
+
+	if (player.hasPermission("syntablist.senioradmin")) {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.SENIORADMIN, isHidden);
+	} else if (player.hasPermission("syntablist.admin")) {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.ADMIN, isHidden);
+	} else if (player.hasPermission("syntablist.mod")) {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.MOD, isHidden);
+	} else if (player.hasPermission("syntablist.helper")) {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.HELPER, isHidden);
+	} else {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.STAFF, isHidden);
+	}
+	return staffData;
+    }
+
+    public static PlayerData getPlayerData(Player player, Action action) {
+	return new PlayerData(player.getName(), player.getUniqueId(), action);
+    }
+
+    // Bukkit Implementation
+    public static StaffData getStaffData(org.bukkit.entity.Player player, Action action) {
+	Boolean isHidden = false;
+	StaffData staffData;
+	if (player.hasPermission("syntablist.hide.perm"))
+	    isHidden = true;
+
+	if (player.hasPermission("syntablist.senioradmin")) {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.SENIORADMIN, isHidden);
+	} else if (player.hasPermission("syntablist.admin")) {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.ADMIN, isHidden);
+	} else if (player.hasPermission("syntablist.mod")) {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.MOD, isHidden);
+	} else if (player.hasPermission("syntablist.helper")) {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.HELPER, isHidden);
+	} else {
+	    staffData = new StaffData(player.getName(), player.getUniqueId(), action, Rank.STAFF, isHidden);
+	}
+	return staffData;
+    }
+
+    public static PlayerData getPlayerData(org.bukkit.entity.Player player, Action action) {
+	return new PlayerData(player.getName(), player.getUniqueId(), action);
+    }
+
+    // Bukkit Implementation
     public static void eventJoin(String channel, org.bukkit.entity.Player player) {
 	if (player.hasPermission("syntablist.senioradmin")) {
 	    StaffData staffData = new StaffData(player.getName(), player.getUniqueId(), Action.JOIN, Rank.SENIORADMIN,
